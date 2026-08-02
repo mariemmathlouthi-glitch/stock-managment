@@ -25,6 +25,16 @@ const registerUser = async (req, res) => {
       });
     }  
 
+    // Si on essaie de créer un admin, vérifier qu'il n'en existe pas déjà
+    if (role === "admin") {
+      const adminExiste = await User.findOne({ role: "admin" });
+      if (adminExiste) {
+        return res.status(403).json({
+          message: "Un administrateur existe déjà. Impossible de créer un second admin."
+        });
+      }
+    }
+
     // Chiffrer le mot de passe
     const salt = await bcrypt.genSalt(10);
     const motDePasseHash = await bcrypt.hash(motDePasse, salt);
@@ -94,7 +104,7 @@ const loginUser = async (req, res) => {
         id: utilisateur._id,
         role: utilisateur.role
       },
-      "secret123",
+      process.env.JWT_SECRET || "secret123",
       {
         expiresIn: "1d"
       }
