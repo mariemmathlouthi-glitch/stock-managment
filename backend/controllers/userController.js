@@ -7,10 +7,10 @@ const jwt = require("jsonwebtoken");
 // =======================
 const registerUser = async (req, res) => {
   try {
-    const { nom, email, telephone, motDePasse, role } = req.body;
+    const { prenom, nom, email, telephone, motDePasse, role } = req.body;
 
     // Vérifier les champs obligatoires
-    if (!nom || !email || !telephone || !motDePasse) {
+    if (!prenom || !nom || !email || !telephone || !motDePasse) {
       return res.status(400).json({
         message: "Veuillez remplir tous les champs."
       });
@@ -31,6 +31,7 @@ const registerUser = async (req, res) => {
 
     // Créer un nouvel utilisateur
     const nouvelUtilisateur = new User({
+      prenom,
       nom,
       email,
       telephone,
@@ -105,6 +106,7 @@ const loginUser = async (req, res) => {
       token,
       utilisateur: {
         id: utilisateur._id,
+        prenom: utilisateur.prenom,
         nom: utilisateur.nom,
         email: utilisateur.email,
         telephone: utilisateur.telephone,
