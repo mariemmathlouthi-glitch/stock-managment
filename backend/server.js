@@ -5,6 +5,7 @@ require('dotenv').config();
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const productRoutes = require("./routes/productRoutes");
 const User = require("./models/User");
 const bcrypt = require("bcryptjs");
 
@@ -14,7 +15,8 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-console.log("Routes utilisateurs et dashboard chargées");
+app.use("/api/products", productRoutes);
+console.log("Routes utilisateurs, dashboard et produits chargées");
 connectDB();
 
 // Seed: créer un admin si aucun admin n'existe
