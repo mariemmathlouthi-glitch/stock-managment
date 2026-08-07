@@ -1,7 +1,9 @@
 /**
  * StockFlow brand tokens — aligned with the login page identity.
+ * Supports both dark and light modes.
  */
-const brand = {
+
+const darkTokens = {
   accent: "#b02a46",
   accentLight: "#db5971",
   accentDark: "#751429",
@@ -33,4 +35,47 @@ const brand = {
   },
 };
 
+const lightTokens = {
+  accent: "#b02a46",
+  accentLight: "#db5971",
+  accentDark: "#751429",
+  accentHoverStart: "#8c1c34",
+  accentHoverEnd: "#c4405a",
+  dark: "#1a1215",
+  darkSurface: "#f8f9fa",
+  darkElevated: "#ffffff",
+  pageBg: "#f4f6f9",
+  cardBg: "#ffffff",
+  inputBg: "#f0f2f5",
+  inputBorder: "#d2d6da",
+  iconMuted: "#7b809a",
+  textPrimary: "#344767",
+  textSecondary: "#7b809a",
+  gradient: "linear-gradient(135deg, #b02a46 0%, #751429 100%)",
+  gradientButton: "linear-gradient(135deg, #b02a46 0%, #db5971 100%)",
+  gradientButtonHover: "linear-gradient(135deg, #8c1c34 0%, #c4405a 100%)",
+  shadowAccent: "0 4px 14px 0 rgba(176, 42, 70, 0.25)",
+  shadowAccentHover: "0 6px 20px 0 rgba(176, 42, 70, 0.35)",
+  shadowCard: "0 2px 12px rgba(0, 0, 0, 0.08)",
+  shadowCardHover: "0 8px 28px rgba(0, 0, 0, 0.12)",
+  shadowSidebar: "4px 0 24px rgba(0, 0, 0, 0.08)",
+  status: {
+    success: { color: "#16a34a", bg: "rgba(22,163,74,0.1)" },
+    warning: { color: "#d97706", bg: "rgba(217,119,6,0.1)" },
+    error: { color: "#dc2626", bg: "rgba(220,38,38,0.1)" },
+    info: { color: "#4f46e5", bg: "rgba(79,70,229,0.1)" },
+  },
+};
+
+/**
+ * Returns brand tokens for the given mode.
+ * @param {boolean} isDark - true for dark mode, false for light mode
+ * @returns {object} brand tokens
+ */
+export function getBrandTokens(isDark = true) {
+  return isDark ? darkTokens : lightTokens;
+}
+
+// Default export for backward compatibility (dark mode)
+const brand = darkTokens;
 export default brand;

@@ -60,6 +60,7 @@ function reducer(state, action) {
       return { ...state, layout: action.value };
     }
     case "DARKMODE": {
+      try { localStorage.setItem("darkMode", JSON.stringify(action.value)); } catch (e) { /* ignore */ }
       return { ...state, darkMode: action.value };
     }
     default: {
@@ -80,7 +81,7 @@ function MaterialUIControllerProvider({ children }) {
     openConfigurator: false,
     direction: "ltr",
     layout: "dashboard",
-    darkMode: true,
+    darkMode: (() => { try { const v = localStorage.getItem("darkMode"); return v !== null ? JSON.parse(v) : true; } catch (e) { return true; } })(),
   };
 
   const [controller, dispatch] = useReducer(reducer, initialState);
