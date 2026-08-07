@@ -11,7 +11,8 @@ import MDButton from "components/MDButton";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import PremiumStatCard from "layouts/dashboard/components/PremiumStatCard";
-import brand from "assets/theme/base/brand";
+import { getBrand } from "assets/theme/base/brand";
+import { useMaterialUIController } from "context";
 
 import { Line, Doughnut } from "react-chartjs-2";
 import {
@@ -29,7 +30,6 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler);
 
-// Custom gradient function
 const gradientChartLine = (ctx, colorStr) => {
   const gradient = ctx.createLinearGradient(0, 0, 0, 400);
   gradient.addColorStop(0, colorStr);
@@ -39,6 +39,9 @@ const gradientChartLine = (ctx, colorStr) => {
 
 function Dashboard() {
   const { t } = useTranslation();
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
+  const brand = useMemo(() => getBrand(darkMode), [darkMode]);
 
   const lineChartOptions = {
     responsive: true,
