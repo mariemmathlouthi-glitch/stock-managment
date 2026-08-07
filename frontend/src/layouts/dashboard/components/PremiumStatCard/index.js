@@ -1,11 +1,17 @@
+import { useMemo } from "react";
 import PropTypes from "prop-types";
 import Card from "@mui/material/Card";
 import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import brand from "assets/theme/base/brand";
+import { getBrand } from "assets/theme/base/brand";
+import { useMaterialUIController } from "context";
 
 function PremiumStatCard({ icon, iconColor, iconBg, title, value, subtitle, trend, trendValue }) {
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
+  const brand = useMemo(() => getBrand(darkMode), [darkMode]);
+
   const isUp = trend === "up";
   const trendColor = isUp ? brand.status.success.color : brand.status.error.color;
   const trendBg = isUp ? brand.status.success.bg : brand.status.error.bg;
@@ -73,10 +79,23 @@ function PremiumStatCard({ icon, iconColor, iconBg, title, value, subtitle, tren
           <MDTypography variant="h3" fontWeight="bold" sx={{ color: brand.textPrimary, mb: 0.5 }}>
             {value}
           </MDTypography>
-          <MDTypography variant="caption" fontWeight="bold" sx={{ color: brand.textSecondary, textTransform: "uppercase", letterSpacing: 0.5, display: "block", mb: 0.5 }}>
+          <MDTypography
+            variant="caption"
+            fontWeight="bold"
+            sx={{
+              color: brand.textSecondary,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+              display: "block",
+              mb: 0.5,
+            }}
+          >
             {title}
           </MDTypography>
-          <MDTypography variant="button" sx={{ color: brand.iconMuted, fontSize: "0.75rem", display: "block" }}>
+          <MDTypography
+            variant="button"
+            sx={{ color: brand.iconMuted, fontSize: "0.75rem", display: "block" }}
+          >
             {subtitle}
           </MDTypography>
         </MDBox>
