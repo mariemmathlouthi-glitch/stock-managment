@@ -21,3 +21,10 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Template clone (do not commit)
+material-dashboard-react/
+
+# Temporary patches
+patches/
