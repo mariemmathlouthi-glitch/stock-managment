@@ -70,6 +70,16 @@ function reducer(state, action) {
 
 // Material Dashboard 2 React context provider
 function MaterialUIControllerProvider({ children }) {
+  const storedDarkMode = (() => {
+    try {
+      const value = localStorage.getItem("darkMode");
+      if (value === null) return true;
+      return value === "true";
+    } catch {
+      return true;
+    }
+  })();
+
   const initialState = {
     miniSidenav: false,
     transparentSidenav: false,
@@ -80,7 +90,7 @@ function MaterialUIControllerProvider({ children }) {
     openConfigurator: false,
     direction: "ltr",
     layout: "dashboard",
-    darkMode: true,
+    darkMode: storedDarkMode,
   };
 
   const [controller, dispatch] = useReducer(reducer, initialState);
@@ -118,7 +128,14 @@ const setFixedNavbar = (dispatch, value) => dispatch({ type: "FIXED_NAVBAR", val
 const setOpenConfigurator = (dispatch, value) => dispatch({ type: "OPEN_CONFIGURATOR", value });
 const setDirection = (dispatch, value) => dispatch({ type: "DIRECTION", value });
 const setLayout = (dispatch, value) => dispatch({ type: "LAYOUT", value });
-const setDarkMode = (dispatch, value) => dispatch({ type: "DARKMODE", value });
+const setDarkMode = (dispatch, value) => {
+  try {
+    localStorage.setItem("darkMode", String(value));
+  } catch {
+    /* ignore storage errors */
+  }
+  dispatch({ type: "DARKMODE", value });
+};
 
 export {
   MaterialUIControllerProvider,
