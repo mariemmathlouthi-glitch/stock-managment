@@ -1,0 +1,182 @@
+{
+  "language": {
+    "fr": "Français",
+    "en": "English"
+  },
+  "navbar": {
+    "brand": "Gestion Stock",
+    "search_placeholder": "Rechercher",
+    "free_download": "Téléchargement gratuit",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "sign_up": "Inscription",
+    "sign_in": "Connexion",
+    "notifications": "Notifications",
+    "admin": "Admin",
+    "check_new_messages": "Vérifier les nouveaux messages",
+    "manage_podcast_sessions": "Gérer les sessions de podcast",
+    "payment_successfully_completed": "Paiement effectué avec succès"
+  },
+  "sidebar": {
+    "dashboard": "Tableau de bord",
+    "stock_dashboard": "Tableau de bord",
+    "admin": "Admin",
+    "products": "Produits",
+    "tables": "Tableaux",
+    "billing": "Facturation",
+    "rtl": "RTL",
+    "notifications": "Notifications",
+    "profile": "Profil",
+    "sign_in": "Connexion",
+    "sign_up": "Inscription",
+    "logout": "Déconnexion",
+    "orders": "Commandes",
+    "analytics": "Analytiques",
+    "settings": "Paramètres"
+  },
+  "breadcrumbs": {
+    "home": "Accueil"
+  },
+  "auth": {
+    "sign_in": {
+      "welcome_back": "Bienvenue de retour",
+      "subtitle": "Connectez-vous avec votre email pour accéder à votre tableau de bord.",
+      "email": "Email",
+      "password": "Mot de passe",
+      "login": "Connexion",
+      "logging_in": "Connexion...",
+      "signup_prompt": "Vous n’avez pas de compte ?",
+      "signup": "Inscription"
+    },
+    "sign_up": {
+      "create_account": "Créez votre compte",
+      "subtitle": "Rejoignez Gestion Stock et gérez vos produits, vos clients et vos commandes.",
+      "first_name": "Prénom",
+      "last_name": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "password": "Mot de passe",
+      "terms": "J’accepte les conditions générales",
+      "register": "Inscription",
+      "registering": "Inscription...",
+      "already_have_account": "Vous avez déjà un compte ?",
+      "login": "Connexion"
+    },
+    "messages": {
+      "login_error": "Email ou mot de passe invalide.",
+      "server_error": "Erreur de connexion au serveur.",
+      "registration_success": "Inscription réussie ! Redirection...",
+      "registration_error": "Erreur lors de l'inscription."
+    }
+  },
+  "dashboard": {
+    "stats": {
+      "bookings": "Inscriptions hebdomadaires",
+      "today_users": "Nouveaux utilisateurs aujourd’hui",
+      "revenue": "Utilisateurs totaux",
+      "subscribers": "Administrateurs",
+      "signups_week": "Inscriptions cette semaine",
+      "total_users": "Utilisateurs totaux",
+      "total_admins": "Administrateurs",
+      "less_than_last_week": "que la semaine dernière",
+      "more_than_last_month": "que le mois dernier",
+      "updated": "Mis à jour"
+    },
+    "overview": {
+      "title": "Activité récente",
+      "growth": "24 % ce mois-ci"
+    },
+    "timeline": {
+      "joined": "a rejoint la plateforme"
+    },
+    "columns": {
+      "name": "Nom",
+      "email": "Email",
+      "role": "Rôle",
+      "joined": "Inscrit"
+    },
+    "charts": {
+      "site_views": "vues du site",
+      "campaign_performance": "Dernières performances de la campagne",
+      "daily_sales": "ventes quotidiennes",
+      "daily_sales_description": "(\u003cstrong\u003e+15%\u003c/strong\u003e) augmentation des ventes aujourd’hui.",
+      "tasks": "tâches terminées",
+      "updated_recently": "mis à jour récemment"
+    },
+    "title": "Tableau de bord",
+    "total_products": "TOTAL PRODUITS",
+    "vs_last_month": "vs mois dernier",
+    "active_users": "UTILISATEURS ACTIFS",
+    "new_this_month": "nouveaux ce mois",
+    "stock_value": "VALEUR DU STOCK",
+    "active_alerts": "ALERTES ACTIVES",
+    "including_out_of_stock": "dont 2 ruptures",
+    "annual_evolution": "ÉVOLUTION ANNUELLE",
+    "stock_value_currency": "Valeur du stock (€)",
+    "value": "Valeur",
+    "flow": "Flux",
+    "distribution": "RÉPARTITION",
+    "stock_by_category": "Stock par catégorie",
+    "months": ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"],
+    "categories": {
+      "computing": "Informatique",
+      "peripherals": "Périphériques",
+      "furniture": "Mobilier",
+      "storage": "Stockage",
+      "accessories": "Accessoires",
+      "audio": "Audio"
+    }
+  },
+  "tables": {
+    "authors_table": "Table des auteurs",
+    "projects_table": "Table des projets",
+    "author": "Auteur",
+    "function": "Fonction",
+    "status": "Statut",
+    "employed": "Embauché",
+    "action": "Action"
+  },
+  "notifications": {
+    "alerts": "Alerts",
+    "notifications": "Notifications",
+    "alerts_description": "Les notifications de cette page utilisent des toasts Bootstrap. En savoir plus ici.",
+    "success_button": "notification de succès",
+    "info_button": "notification d'information",
+    "warning_button": "notification d'avertissement",
+    "error_button": "notification d'erreur",
+    "title": "Material Dashboard",
+    "content": "Bonjour, monde ! Ceci est un message de notification",
+    "time": "il y a 11 minutes"
+  },
+  "profile": {
+    "profile_information": "informations du profil",
+    "conversations": "conversations",
+    "projects": "projets",
+    "message": "Message",
+    "settings": "Paramètres",
+    "view_project": "voir le projet"
+  },
+  "adminDashboard": {
+    "administrator": "Administrateur",
+    "total_users": "Utilisateurs totaux",
+    "main_account": "Compte principal",
+    "this_month": "ce mois"
+  },
+  "rtl": {
+    "daily_revenue": "Revenus du jour",
+    "daily_users": "Utilisateurs du jour",
+    "new_clients": "Nouveaux clients",
+    "sales": "Ventes",
+    "vs_last_week": "par rapport à la semaine dernière",
+    "vs_last_month": "par rapport au mois dernier",
+    "updated_4_minutes_ago": "Mis à jour il y a 4 minutes",
+    "site_visits": "Visites du site",
+    "campaign_performance": "Dernières performances de la campagne",
+    "completed_tasks": "Tâches terminées"
+  },
+  "common": {
+    "edit": "Modifier",
+    "online": "en ligne",
+    "offline": "hors ligne"
+  }
+}

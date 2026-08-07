@@ -1,0 +1,182 @@
+{
+  "language": {
+    "fr": "Français",
+    "en": "English"
+  },
+  "navbar": {
+    "brand": "Gestion Stock",
+    "search_placeholder": "Search here",
+    "free_download": "Free Download",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "sign_up": "Sign Up",
+    "sign_in": "Sign In",
+    "notifications": "Notifications",
+    "admin": "Admin",
+    "check_new_messages": "Check new messages",
+    "manage_podcast_sessions": "Manage podcast sessions",
+    "payment_successfully_completed": "Payment successfully completed"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "stock_dashboard": "Dashboard",
+    "admin": "Admin",
+    "products": "Products",
+    "tables": "Tables",
+    "billing": "Billing",
+    "rtl": "RTL",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "sign_in": "Sign In",
+    "sign_up": "Sign Up",
+    "logout": "Logout",
+    "orders": "Orders",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "breadcrumbs": {
+    "home": "Home"
+  },
+  "auth": {
+    "sign_in": {
+      "welcome_back": "Welcome back",
+      "subtitle": "Sign in with your email to access your dashboard.",
+      "email": "Email",
+      "password": "Password",
+      "login": "Sign In",
+      "logging_in": "Signing in...",
+      "signup_prompt": "Don’t have an account?",
+      "signup": "Sign Up"
+    },
+    "sign_up": {
+      "create_account": "Create your account",
+      "subtitle": "Join Gestion Stock and manage your products, customers and orders.",
+      "first_name": "First Name",
+      "last_name": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "terms": "I agree to the Terms and Conditions",
+      "register": "Sign Up",
+      "registering": "Signing up...",
+      "already_have_account": "Already have an account?",
+      "login": "Sign In"
+    },
+    "messages": {
+      "login_error": "Invalid email or password.",
+      "server_error": "Unable to connect to the server.",
+      "registration_success": "Registration successful! Redirecting...",
+      "registration_error": "Registration failed."
+    }
+  },
+  "dashboard": {
+    "stats": {
+      "bookings": "Weekly signups",
+      "today_users": "New users today",
+      "revenue": "Total users",
+      "subscribers": "Admins",
+      "signups_week": "Signups this week",
+      "total_users": "Total users",
+      "total_admins": "Admins",
+      "less_than_last_week": "than last week",
+      "more_than_last_month": "than last month",
+      "updated": "Updated"
+    },
+    "overview": {
+      "title": "Recent activity",
+      "growth": "24% this month"
+    },
+    "timeline": {
+      "joined": "joined the platform"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "joined": "Joined"
+    },
+    "charts": {
+      "site_views": "Site Views",
+      "campaign_performance": "Last Campaign Performance",
+      "daily_sales": "Daily Sales",
+      "daily_sales_description": "(\u003cstrong\u003e+15%\u003c/strong\u003e) increase in today’s sales.",
+      "tasks": "Completed Tasks",
+      "updated_recently": "Updated recently"
+    },
+    "title": "Dashboard",
+    "total_products": "TOTAL PRODUCTS",
+    "vs_last_month": "vs last month",
+    "active_users": "ACTIVE USERS",
+    "new_this_month": "new this month",
+    "stock_value": "STOCK VALUE",
+    "active_alerts": "ACTIVE ALERTS",
+    "including_out_of_stock": "including 2 out of stock",
+    "annual_evolution": "ANNUAL EVOLUTION",
+    "stock_value_currency": "Stock value (€)",
+    "value": "Value",
+    "flow": "Flow",
+    "distribution": "DISTRIBUTION",
+    "stock_by_category": "Stock by category",
+    "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "categories": {
+      "computing": "Computing",
+      "peripherals": "Peripherals",
+      "furniture": "Furniture",
+      "storage": "Storage",
+      "accessories": "Accessories",
+      "audio": "Audio"
+    }
+  },
+  "tables": {
+    "authors_table": "Authors Table",
+    "projects_table": "Projects Table",
+    "author": "Author",
+    "function": "Function",
+    "status": "Status",
+    "employed": "Employed",
+    "action": "Action"
+  },
+  "notifications": {
+    "alerts": "Alerts",
+    "notifications": "Notifications",
+    "alerts_description": "Notifications on this page use Toasts from Bootstrap. Read more details here.",
+    "success_button": "success notification",
+    "info_button": "info notification",
+    "warning_button": "warning notification",
+    "error_button": "error notification",
+    "title": "Material Dashboard",
+    "content": "Hello, world! This is a notification message",
+    "time": "11 mins ago"
+  },
+  "profile": {
+    "profile_information": "Profile information",
+    "conversations": "Conversations",
+    "projects": "Projects",
+    "message": "Message",
+    "settings": "Settings",
+    "view_project": "view project"
+  },
+  "adminDashboard": {
+    "administrator": "Administrator",
+    "total_users": "Total users",
+    "main_account": "Main account",
+    "this_month": "this month"
+  },
+  "rtl": {
+    "daily_revenue": "Daily Revenue",
+    "daily_users": "Daily Users",
+    "new_clients": "New Clients",
+    "sales": "Sales",
+    "vs_last_week": "vs last week",
+    "vs_last_month": "vs last month",
+    "updated_4_minutes_ago": "Updated 4 minutes ago",
+    "site_visits": "Site Visits",
+    "campaign_performance": "Campaign Performance",
+    "completed_tasks": "Completed Tasks"
+  },
+  "common": {
+    "edit": "Edit",
+    "on": "online",
+    "offline": "offline"
+  }
+}
