@@ -54,7 +54,6 @@ import {
   setTransparentNavbar,
   setMiniSidenav,
   setOpenConfigurator,
-  setDarkMode,
 } from "context";
 
 function DashboardNavbar({ absolute, light, isMini }) {
@@ -93,7 +92,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
 
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
   const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
-  const handleDarkMode = () => setDarkMode(dispatch, !darkMode);
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
   const handleCloseMenu = () => setOpenMenu(false);
 
@@ -151,18 +149,16 @@ function DashboardNavbar({ absolute, light, isMini }) {
             <MDBox pr={1}>
               <LanguageSwitcher />
             </MDBox>
+            <MDBox pr={1}>
+              <MDInput label={t("navbar.search_placeholder")} />
+            </MDBox>
             <MDBox color={light ? "white" : "inherit"} display="flex" alignItems="center">
-              <IconButton
-                size="small"
-                disableRipple
-                color="inherit"
-                sx={navbarIconButton}
-                onClick={handleDarkMode}
-                title={darkMode ? "Mode clair" : "Mode sombre"}
-                aria-label={darkMode ? "Passer en mode clair" : "Passer en mode sombre"}
-              >
-                <Icon sx={iconsStyle}>{darkMode ? "light_mode" : "dark_mode"}</Icon>
-              </IconButton>
+              <MDBox display="flex" alignItems="center" sx={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "8px", px: 1.5, py: 0.5, mr: 1, border: "1px solid rgba(255,255,255,0.1)" }}>
+                <Icon sx={{ color: "#a89a9f", fontSize: "1rem", mr: 0.5 }}>schedule</Icon>
+                <MDTypography variant="button" fontWeight="medium" sx={{ color: "#a89a9f" }}>
+                  Décembre 2024
+                </MDTypography>
+              </MDBox>
               <IconButton
                 size="small"
                 disableRipple
