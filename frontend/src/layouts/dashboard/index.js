@@ -11,8 +11,7 @@ import MDButton from "components/MDButton";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import PremiumStatCard from "layouts/dashboard/components/PremiumStatCard";
-import { getBrand } from "assets/theme/base/brand";
-import { useMaterialUIController } from "context";
+import brand from "assets/theme/base/brand";
 
 import { Line, Doughnut } from "react-chartjs-2";
 import {
@@ -39,9 +38,6 @@ const gradientChartLine = (ctx, colorStr) => {
 
 function Dashboard() {
   const { t } = useTranslation();
-  const [controller] = useMaterialUIController();
-  const { darkMode } = controller;
-  const brand = useMemo(() => getBrand(darkMode), [darkMode]);
 
   const lineChartOptions = {
     responsive: true,
