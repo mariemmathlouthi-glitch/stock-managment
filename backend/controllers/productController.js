@@ -24,11 +24,11 @@ const findProductWithAccess = async (req, productId) => {
 
 const createProduct = async (req, res) => {
   try {
-    const { name, description, category, quantity, price } = req.body;
+    const { name, description, category, quantity, price, currency, imageUrl } = req.body;
 
-    if (!name || !category || quantity === undefined || price === undefined) {
+    if (!name || !category || quantity === undefined || price === undefined || !currency) {
       return res.status(400).json({
-        message: "Veuillez remplir tous les champs obligatoires (nom, catégorie, quantité, prix).",
+        message: "Veuillez remplir tous les champs obligatoires (nom, catégorie, quantité, prix, devise).",
       });
     }
 
@@ -38,6 +38,8 @@ const createProduct = async (req, res) => {
       category,
       quantity,
       price,
+      currency,
+      imageUrl: imageUrl || "",
       owner: req.user.id,
     });
 
@@ -75,13 +77,15 @@ const updateProduct = async (req, res) => {
     const { product, error } = await findProductWithAccess(req, req.params.id);
     if (error) return res.status(error.status).json({ message: error.message });
 
-    const { name, description, category, quantity, price } = req.body;
+    const { name, description, category, quantity, price, currency, imageUrl } = req.body;
 
     if (name !== undefined) product.name = name;
     if (description !== undefined) product.description = description;
     if (category !== undefined) product.category = category;
     if (quantity !== undefined) product.quantity = quantity;
     if (price !== undefined) product.price = price;
+    if (currency !== undefined) product.currency = currency;
+    if (imageUrl !== undefined) product.imageUrl = imageUrl;
 
     await product.save();
     res.json({ message: "Produit mis à jour avec succès.", product });

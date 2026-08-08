@@ -28,6 +28,15 @@ const productSchema = new mongoose.Schema(
       required: [true, "Le prix est requis"],
       min: [0, "Le prix ne peut pas être négatif"],
     },
+    currency: {
+      type: String,
+      required: [true, "La devise est requise"],
+      default: "EUR",
+    },
+    imageUrl: {
+      type: String,
+      default: "",
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -1,6 +1,4 @@
 import PropTypes from "prop-types";
-import { forwardRef, useMemo } from "react";
-
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -9,27 +7,32 @@ import Grid from "@mui/material/Grid";
 import CircularProgress from "@mui/material/CircularProgress";
 import Icon from "@mui/material/Icon";
 import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
 import Slide from "@mui/material/Slide";
-
+import { forwardRef } from "react";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
-
 import { getBrand } from "assets/theme/base/brand";
 import { useMaterialUIController } from "context";
 
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = "DialogTransition";
 
-function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors, loading, isEdit }) {
+function ProductFormDialog({
+  open,
+  onClose,
+  onSubmit,
+  formData,
+  onChange,
+  errors,
+  loading,
+  isEdit,
+}) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
-  const brand = useMemo(() => getBrand(darkMode), [darkMode]);
-
-  const total = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.price) || 0);
-  const currencySymbol =
-    formData.currency === "TND" ? "TND" : formData.currency === "USD" ? "$" : "€";
+  const brand = getBrand(darkMode);
 
   const inputStyles = {
     backgroundColor: brand.inputBg,
@@ -44,7 +47,7 @@ function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors
       borderColor: `${brand.accent} !important`,
     },
     "& input, & textarea": {
-      color: brand.textPrimary,
+      color: brand.textSecondary,
     },
   };
 
@@ -69,6 +72,15 @@ function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors
       background: brand.gradientButtonHover,
       boxShadow: brand.shadowAccentHover,
     },
+  };
+
+  const total = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.price) || 0);
+  const currencySymbol =
+    formData.currency === "TND" ? "TND" : formData.currency === "USD" ? "$" : "€";
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    onSubmit();
   };
 
   return (
@@ -106,7 +118,7 @@ function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors
             width="2.5rem"
             height="2.5rem"
             borderRadius="10px"
-            sx={{ backgroundColor: brand.iconBoxBg }}
+            sx={{ backgroundColor: "rgba(176, 42, 70, 0.15)" }}
           >
             <Icon sx={{ color: brand.accent }}>{isEdit ? "edit" : "add"}</Icon>
           </MDBox>
@@ -130,12 +142,12 @@ function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors
             "&:hover": { backgroundColor: brand.inputBorder },
           }}
         >
-          <Icon sx={{ color: brand.iconMuted, fontSize: "1.2rem" }}>close</Icon>
+          <Icon sx={{ color: brand.textSecondary, fontSize: "1.2rem" }}>close</Icon>
         </IconButton>
       </DialogTitle>
 
       <DialogContent sx={{ px: 3 }}>
-        <MDBox component="form" pt={1}>
+        <MDBox component="form" id="product-form" pt={1} onSubmit={handleSubmit} noValidate>
           <Grid container spacing={2.5}>
             <Grid item xs={12}>
               <MDTypography variant="caption" sx={labelSx}>
@@ -242,27 +254,31 @@ function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors
                 DEVISE <span style={{ color: brand.accent }}>*</span>
               </MDTypography>
               <MDInput
+                select
                 name="currency"
                 value={formData.currency || "EUR"}
                 onChange={onChange}
                 fullWidth
-                select
-                SelectProps={{ native: true }}
                 InputProps={{ sx: inputStyles }}
               >
-                <option value="EUR">Euro (EUR)</option>
-                <option value="USD">Dollar (USD)</option>
-                <option value="TND">Dinar (TND)</option>
+                <MenuItem value="EUR">Euro (€)</MenuItem>
+                <MenuItem value="TND">Dinar (TND)</MenuItem>
+                <MenuItem value="USD">Dollar ($)</MenuItem>
               </MDInput>
+              {errors.currency && (
+                <MDTypography variant="caption" color="error" mt={0.5} display="block">
+                  {errors.currency}
+                </MDTypography>
+              )}
             </Grid>
 
             <Grid item xs={12}>
               <MDTypography variant="caption" sx={labelSx}>
-                PHOTO DU PRODUIT (URL OPTIONNELLE)
+                PHOTO DU PRODUIT (URL Optionnelle)
               </MDTypography>
               <MDInput
                 name="imageUrl"
-                value={formData.imageUrl || ""}
+                value={formData.imageUrl}
                 onChange={onChange}
                 fullWidth
                 error={Boolean(errors.imageUrl)}
@@ -282,7 +298,7 @@ function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors
             p={2}
             borderRadius="10px"
             sx={{
-              backgroundColor: brand.iconBoxBg,
+              backgroundColor: "rgba(176,42,70,0.05)",
               border: `1px dashed ${brand.inputBorder}`,
             }}
           >
@@ -319,7 +335,13 @@ function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors
         >
           ANNULER
         </MDButton>
-        <MDButton variant="contained" onClick={onSubmit} disabled={loading} sx={buttonGradientSx}>
+        <MDButton
+          type="submit"
+          form="product-form"
+          variant="contained"
+          disabled={loading}
+          sx={buttonGradientSx}
+        >
           {loading ? (
             <CircularProgress size={18} color="inherit" />
           ) : isEdit ? (

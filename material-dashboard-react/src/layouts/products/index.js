@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import PropTypes from "prop-types";
+
+import { useMaterialUIController } from "context";
 
 import Grid from "@mui/material/Grid";
 
@@ -58,7 +61,7 @@ import MDInput from "components/MDInput";
 
 import MDButton from "components/MDButton";
 
-import brand from "assets/theme/base/brand";
+import { getBrand } from "assets/theme/base/brand";
 
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from "api/products";
 
@@ -66,11 +69,19 @@ import ProductFormDialog from "layouts/products/components/ProductFormDialog";
 
 import DeleteConfirmDialog from "layouts/products/components/DeleteConfirmDialog";
 
-
-
 const LOW_STOCK_THRESHOLD = 10;
 
-
+// Column widths for the products table
+const COL_WIDTHS = {
+  product: "220px",
+  reference: "110px",
+  category: "120px",
+  price: "100px",
+  stock: "100px",
+  status: "110px",
+  date: "110px",
+  actions: "90px",
+};
 
 const EMPTY_FORM = {
   name: "",
@@ -81,8 +92,6 @@ const EMPTY_FORM = {
   currency: "EUR",
   imageUrl: "",
 };
-
-
 
 const productSchema = yup.object().shape({
   name: yup.string().trim().required("Le nom est requis"),
@@ -100,119 +109,62 @@ const productSchema = yup.object().shape({
   currency: yup.string().required("La devise est requise"),
   imageUrl: yup
     .string()
-    .transform((curr, orig) => (orig === "" ? undefined : curr))
+    .transform((value, originalValue) => (originalValue === "" ? undefined : value))
     .url("Veuillez entrer une URL valide")
-    .optional()
-    .nullable(),
+    .optional(),
 });
 
-
-
-const getStockStatus = (quantity) => {
-
+const getStockStatus = (quantity, brand) => {
   if (quantity <= 0) return { label: "Rupture", ...brand.status.error };
 
   if (quantity <= LOW_STOCK_THRESHOLD) return { label: "Stock faible", ...brand.status.warning };
 
   return { label: "En stock", ...brand.status.success };
-
 };
 
-
-
-const formatPrice = (price, currency = "EUR") =>
-
-  new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(price);
-
-
+const formatPrice = (price) =>
+  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(price);
 
 const formatDate = (date) =>
-
   new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
-
-
 
 const getReference = (id) => (id ? id.slice(-8).toUpperCase() : "—");
 
-const COLUMNS = [
-  { name: "Produit", width: "25%", minWidth: "220px", align: "left" },
-  { name: "Référence", width: "11%", minWidth: "110px", align: "left" },
-  { name: "Catégorie", width: "11%", minWidth: "120px", align: "left" },
-  { name: "Prix", width: "10%", minWidth: "95px", align: "left" },
-  { name: "Stock", width: "11%", minWidth: "105px", align: "left" },
-  { name: "Statut", width: "11%", minWidth: "125px", align: "left" },
-  { name: "Date", width: "11%", minWidth: "110px", align: "left" },
-  { name: "Actions", width: "10%", minWidth: "100px", align: "left" },
-];
-
-const inputStyles = {
-
+// inputStyles and buttonGradientSx are now functions of brand (built inside component)
+const makeInputStyles = (brand) => ({
   backgroundColor: brand.inputBg,
-
   borderRadius: "10px",
-
   "& .MuiOutlinedInput-notchedOutline": {
-
     borderColor: `${brand.inputBorder} !important`,
-
   },
-
   "&:hover .MuiOutlinedInput-notchedOutline": {
-
     borderColor: `${brand.accent} !important`,
-
   },
-
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-
     borderColor: `${brand.accent} !important`,
-
     borderWidth: "1.5px",
-
   },
+});
 
-};
-
-
-
-const buttonGradientSx = {
-
+const makeButtonGradientSx = (brand) => ({
   background: brand.gradientButton,
-
   color: "white !important",
-
   borderRadius: "10px",
-
   fontWeight: 600,
-
   letterSpacing: 0.5,
-
   boxShadow: brand.shadowAccent,
-
   transition: "all 0.25s ease",
-
   "&:hover": {
-
     background: brand.gradientButtonHover,
-
     boxShadow: brand.shadowAccentHover,
-
     transform: "translateY(-1px)",
-
   },
+});
 
-};
-
-
-
-function StatCard({ title, value, icon, iconColor, iconBg, delay = 0 }) {
-
+function StatCard({ title, value, icon, iconColor, iconBg, delay = 0, brand }) {
   return (
-
     <Grow in timeout={400 + delay}>
-
       <Card
-
         sx={{
           borderRadius: "16px",
           p: 2.5,
@@ -235,7 +187,12 @@ function StatCard({ title, value, icon, iconColor, iconBg, delay = 0 }) {
             >
               {title}
             </MDTypography>
-            <MDTypography variant="h4" fontWeight="bold" mt={0.75} sx={{ color: brand.textPrimary }}>
+            <MDTypography
+              variant="h4"
+              fontWeight="bold"
+              mt={0.75}
+              sx={{ color: brand.textPrimary }}
+            >
               {value}
             </MDTypography>
           </MDBox>
@@ -255,6 +212,16 @@ function StatCard({ title, value, icon, iconColor, iconBg, delay = 0 }) {
     </Grow>
   );
 }
+
+StatCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  icon: PropTypes.string.isRequired,
+  iconColor: PropTypes.string.isRequired,
+  iconBg: PropTypes.string.isRequired,
+  delay: PropTypes.number,
+  brand: PropTypes.object.isRequired,
+};
 
 function StatusChip({ label, color, bg }) {
   return (
@@ -286,7 +253,19 @@ function StatusChip({ label, color, bg }) {
   );
 }
 
+StatusChip.propTypes = {
+  label: PropTypes.node.isRequired,
+  color: PropTypes.string.isRequired,
+  bg: PropTypes.string.isRequired,
+};
+
 function Products() {
+  const [controller] = useMaterialUIController();
+  const { darkMode } = controller;
+  const brand = getBrand(darkMode);
+  const inputStyles = makeInputStyles(brand);
+  const buttonGradientSx = makeButtonGradientSx(brand);
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -303,6 +282,29 @@ function Products() {
 
   const showNotification = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
+  };
+
+  const recordActivity = (type, product) => {
+    try {
+      const current = JSON.parse(localStorage.getItem("profileActivity") || "[]");
+      const activity = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        type,
+        productName: product.name,
+        detail:
+          type === "created"
+            ? `Produit ajouté avec ${product.quantity} unité${product.quantity > 1 ? "s" : ""}`
+            : type === "updated"
+            ? `Informations mises à jour — ${product.quantity} unité${
+                product.quantity > 1 ? "s" : ""
+              }`
+            : "Produit retiré du catalogue",
+        createdAt: new Date().toISOString(),
+      };
+      localStorage.setItem("profileActivity", JSON.stringify([activity, ...current].slice(0, 50)));
+    } catch {
+      // L'historique est une amélioration locale : il ne doit pas bloquer la gestion des produits.
+    }
   };
 
   const loadProducts = useCallback(async () => {
@@ -329,7 +331,9 @@ function Products() {
   const stats = useMemo(() => {
     const totalProducts = products.length;
     const stockValue = products.reduce((sum, p) => sum + p.price * p.quantity, 0);
-    const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= LOW_STOCK_THRESHOLD).length;
+    const lowStock = products.filter(
+      (p) => p.quantity > 0 && p.quantity <= LOW_STOCK_THRESHOLD
+    ).length;
     return { totalProducts, stockValue, lowStock, categories: categories.length };
   }, [products, categories]);
 
@@ -343,13 +347,18 @@ function Products() {
 
       const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
 
-      const status = getStockStatus(product.quantity).label;
-      const statusMap = { all: true, "En stock": status === "En stock", "Stock faible": status === "Stock faible", Rupture: status === "Rupture" };
+      const status = getStockStatus(product.quantity, brand).label;
+      const statusMap = {
+        all: true,
+        "En stock": status === "En stock",
+        "Stock faible": status === "Stock faible",
+        Rupture: status === "Rupture",
+      };
       const matchesStatus = statusMap[statusFilter];
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [products, search, categoryFilter, statusFilter]);
+  }, [products, search, categoryFilter, statusFilter, brand]);
 
   const handleOpenCreate = () => {
     setSelectedProduct(null);
@@ -401,18 +410,26 @@ function Products() {
       setFormErrors({});
       setFormLoading(true);
 
-      const finalPayload = {
+      const productPayload = {
         ...validatedPayload,
         imageUrl: validatedPayload.imageUrl || "",
       };
 
       if (selectedProduct) {
-        const data = await updateProduct(selectedProduct._id, finalPayload);
+        const data = await updateProduct(selectedProduct._id, productPayload);
+        if (!data.product) {
+          throw new Error("La réponse du serveur ne contient pas le produit mis à jour.");
+        }
         setProducts((prev) => prev.map((p) => (p._id === selectedProduct._id ? data.product : p)));
+        recordActivity("updated", data.product);
         showNotification("Produit mis à jour avec succès.");
       } else {
-        const data = await createProduct(finalPayload);
+        const data = await createProduct(productPayload);
+        if (!data.product) {
+          throw new Error("La réponse du serveur ne contient pas le produit créé.");
+        }
         setProducts((prev) => [data.product, ...prev]);
+        recordActivity("created", data.product);
         showNotification("Produit créé avec succès.");
       }
 
@@ -438,6 +455,7 @@ function Products() {
     try {
       await deleteProduct(selectedProduct._id);
       setProducts((prev) => prev.filter((p) => p._id !== selectedProduct._id));
+      recordActivity("deleted", selectedProduct);
       showNotification("Produit supprimé avec succès.");
       setDeleteOpen(false);
     } catch (error) {
@@ -457,7 +475,11 @@ function Products() {
           <MDBox mb={4}>
             <MDBox display="flex" alignItems="center" mb={1}>
               <MDBox width="28px" height="2px" sx={{ backgroundColor: brand.accent }} mr={1.5} />
-              <MDTypography variant="caption" fontWeight="bold" sx={{ color: brand.accent, letterSpacing: 1.2 }}>
+              <MDTypography
+                variant="caption"
+                fontWeight="bold"
+                sx={{ color: brand.accent, letterSpacing: 1.2 }}
+              >
                 INVENTAIRE
               </MDTypography>
             </MDBox>
@@ -479,6 +501,7 @@ function Products() {
               iconColor={brand.accent}
               iconBg="rgba(176,42,70,0.12)"
               delay={0}
+              brand={brand}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -489,6 +512,7 @@ function Products() {
               iconColor={brand.status.success.color}
               iconBg={brand.status.success.bg}
               delay={80}
+              brand={brand}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -499,6 +523,7 @@ function Products() {
               iconColor={brand.status.warning.color}
               iconBg={brand.status.warning.bg}
               delay={160}
+              brand={brand}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -509,6 +534,7 @@ function Products() {
               iconColor={brand.status.info.color}
               iconBg={brand.status.info.bg}
               delay={240}
+              brand={brand}
             />
           </Grid>
         </Grid>
@@ -543,7 +569,9 @@ function Products() {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Icon fontSize="small" sx={{ color: brand.iconMuted }}>search</Icon>
+                        <Icon fontSize="small" sx={{ color: brand.iconMuted }}>
+                          search
+                        </Icon>
                       </InputAdornment>
                     ),
                     sx: inputStyles,
@@ -557,7 +585,9 @@ function Products() {
                     displayEmpty
                     startAdornment={
                       <InputAdornment position="start" sx={{ ml: 0.5 }}>
-                        <Icon fontSize="small" sx={{ color: brand.iconMuted }}>filter_list</Icon>
+                        <Icon fontSize="small" sx={{ color: brand.iconMuted }}>
+                          filter_list
+                        </Icon>
                       </InputAdornment>
                     }
                     sx={{ height: 42, borderRadius: "10px", ...inputStyles }}
@@ -609,7 +639,11 @@ function Products() {
                     );
                   })}
                 </MDBox>
-                <MDButton variant="contained" onClick={handleOpenCreate} sx={{ ...buttonGradientSx, whiteSpace: "nowrap", px: 2.5 }}>
+                <MDButton
+                  variant="contained"
+                  onClick={handleOpenCreate}
+                  sx={{ ...buttonGradientSx, whiteSpace: "nowrap", px: 2.5 }}
+                >
                   <Icon sx={{ mr: 0.5, fontSize: "1.1rem" }}>add</Icon>
                   Ajouter un produit
                 </MDButton>
@@ -618,7 +652,14 @@ function Products() {
 
             <MDBox p={{ xs: 2, md: 3 }} pt={2}>
               {loading ? (
-                <MDBox display="flex" flexDirection="column" justifyContent="center" alignItems="center" py={10} gap={2}>
+                <MDBox
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  py={10}
+                  gap={2}
+                >
                   <CircularProgress sx={{ color: brand.accent }} size={36} />
                   <MDTypography variant="caption" sx={{ color: brand.textSecondary }}>
                     Chargement des produits...
@@ -639,7 +680,9 @@ function Products() {
                     <Icon sx={{ fontSize: 32, color: brand.accent }}>inventory_2</Icon>
                   </MDBox>
                   <MDTypography variant="h6" fontWeight="bold" sx={{ color: brand.textPrimary }}>
-                    {products.length === 0 ? "Aucun produit pour le moment" : "Aucun produit ne correspond à votre recherche"}
+                    {products.length === 0
+                      ? "Aucun produit pour le moment"
+                      : "Aucun produit ne correspond à votre recherche"}
                   </MDTypography>
                   <MDTypography variant="body2" sx={{ color: brand.textSecondary, mt: 0.5 }}>
                     {products.length === 0
@@ -647,7 +690,11 @@ function Products() {
                       : "Essayez de modifier vos filtres ou votre recherche."}
                   </MDTypography>
                   {products.length === 0 && (
-                    <MDButton variant="contained" onClick={handleOpenCreate} sx={{ ...buttonGradientSx, mt: 3 }}>
+                    <MDButton
+                      variant="contained"
+                      onClick={handleOpenCreate}
+                      sx={{ ...buttonGradientSx, mt: 3 }}
+                    >
                       Ajouter votre premier produit
                     </MDButton>
                   )}
@@ -673,13 +720,21 @@ function Products() {
                           },
                         }}
                       >
-                        {COLUMNS.map((col) => (
+                        {[
+                          { label: "Produit", width: COL_WIDTHS.product },
+                          { label: "Référence", width: COL_WIDTHS.reference },
+                          { label: "Catégorie", width: COL_WIDTHS.category },
+                          { label: "Prix", width: COL_WIDTHS.price },
+                          { label: "Stock", width: COL_WIDTHS.stock },
+                          { label: "Statut", width: COL_WIDTHS.status },
+                          { label: "Date", width: COL_WIDTHS.date },
+                          { label: "Actions", width: COL_WIDTHS.actions },
+                        ].map(({ label, width }) => (
                           <TableCell
-                            key={col.name}
-                            align={col.align}
+                            key={label}
                             sx={{
-                              width: col.width,
-                              minWidth: col.minWidth,
+                              width,
+                              minWidth: width,
                               fontWeight: 700,
                               fontSize: "0.7rem",
                               textTransform: "uppercase",
@@ -688,14 +743,14 @@ function Products() {
                               whiteSpace: "nowrap",
                             }}
                           >
-                            {col.name}
+                            {label}
                           </TableCell>
                         ))}
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {filteredProducts.map((product, index) => {
-                        const status = getStockStatus(product.quantity);
+                        const status = getStockStatus(product.quantity, brand);
                         return (
                           <TableRow
                             key={product._id}
@@ -717,44 +772,47 @@ function Products() {
                             }}
                           >
                             <TableCell
-                              align={COLUMNS[0].align}
-                              sx={{
-                                width: COLUMNS[0].width,
-                                minWidth: COLUMNS[0].minWidth,
-                              }}
+                              sx={{ width: COL_WIDTHS.product, minWidth: COL_WIDTHS.product }}
                             >
                               <MDBox display="flex" alignItems="center" gap={1.5}>
                                 <MDBox
                                   display="flex"
                                   alignItems="center"
                                   justifyContent="center"
+                                  flexShrink={0}
                                   width="2.75rem"
                                   height="2.75rem"
                                   borderRadius="12px"
-                                  sx={{ backgroundColor: "rgba(176,42,70,0.1)", flexShrink: 0 }}
+                                  sx={{ backgroundColor: "rgba(176,42,70,0.1)" }}
                                 >
-                                  <Icon sx={{ color: brand.accent, fontSize: "1.15rem" }}>inventory_2</Icon>
+                                  <Icon sx={{ color: brand.accent, fontSize: "1.15rem" }}>
+                                    inventory_2
+                                  </Icon>
                                 </MDBox>
-                                <MDBox sx={{ minWidth: 0, width: "100%" }}>
+                                <MDBox sx={{ overflow: "hidden" }}>
                                   <MDTypography
                                     variant="button"
                                     fontWeight="bold"
                                     display="block"
                                     sx={{
                                       color: brand.textPrimary,
-                                      whiteSpace: "normal",
-                                      wordBreak: "break-word",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      maxWidth: "140px",
                                     }}
                                   >
                                     {product.name}
                                   </MDTypography>
                                   <MDTypography
                                     variant="caption"
-                                    display="block"
                                     sx={{
                                       color: brand.textSecondary,
-                                      whiteSpace: "normal",
-                                      wordBreak: "break-word",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      display: "block",
+                                      maxWidth: "140px",
                                     }}
                                   >
                                     {product.description || "—"}
@@ -763,11 +821,7 @@ function Products() {
                               </MDBox>
                             </TableCell>
                             <TableCell
-                              align={COLUMNS[1].align}
-                              sx={{
-                                width: COLUMNS[1].width,
-                                minWidth: COLUMNS[1].minWidth,
-                              }}
+                              sx={{ width: COL_WIDTHS.reference, minWidth: COL_WIDTHS.reference }}
                             >
                               <MDTypography
                                 variant="caption"
@@ -787,122 +841,103 @@ function Products() {
                             </TableCell>
 
                             <TableCell
-                              align={COLUMNS[2].align}
-                              sx={{
-                                width: COLUMNS[2].width,
-                                minWidth: COLUMNS[2].minWidth,
-                              }}
+                              sx={{ width: COL_WIDTHS.category, minWidth: COL_WIDTHS.category }}
                             >
                               <Chip
                                 label={product.category}
                                 size="small"
                                 sx={{
                                   backgroundColor: "rgba(99,102,241,0.08)",
+
                                   color: brand.status.info.color,
+
                                   fontWeight: 500,
+
                                   fontSize: "0.75rem",
+
                                   borderRadius: "6px",
-                                  maxWidth: "100%",
                                 }}
                               />
                             </TableCell>
 
-                            <TableCell
-                              align={COLUMNS[3].align}
-                              sx={{
-                                width: COLUMNS[3].width,
-                                minWidth: COLUMNS[3].minWidth,
-                              }}
-                            >
+                            <TableCell sx={{ width: COL_WIDTHS.price, minWidth: COL_WIDTHS.price }}>
                               <MDTypography
                                 variant="button"
                                 fontWeight="bold"
-                                sx={{
-                                  color: brand.accent,
-                                  whiteSpace: "nowrap",
-                                }}
+                                sx={{ color: brand.accent }}
                               >
-                                {formatPrice(product.price, product.currency)}
+                                {formatPrice(product.price)}
                               </MDTypography>
                             </TableCell>
 
-                            <TableCell
-                              align={COLUMNS[4].align}
-                              sx={{
-                                width: COLUMNS[4].width,
-                                minWidth: COLUMNS[4].minWidth,
-                              }}
-                            >
+                            <TableCell sx={{ width: COL_WIDTHS.stock, minWidth: COL_WIDTHS.stock }}>
                               <MDTypography
                                 variant="button"
                                 fontWeight="medium"
-                                sx={{
-                                  color: status.color,
-                                  whiteSpace: "nowrap",
-                                }}
+                                sx={{ color: status.color, whiteSpace: "nowrap" }}
                               >
                                 {product.quantity} unités
                               </MDTypography>
                             </TableCell>
 
                             <TableCell
-                              align={COLUMNS[5].align}
-                              sx={{
-                                width: COLUMNS[5].width,
-                                minWidth: COLUMNS[5].minWidth,
-                              }}
+                              sx={{ width: COL_WIDTHS.status, minWidth: COL_WIDTHS.status }}
                             >
-                              <StatusChip label={status.label} color={status.color} bg={status.bg} />
+                              <StatusChip
+                                label={status.label}
+                                color={status.color}
+                                bg={status.bg}
+                              />
                             </TableCell>
 
-                            <TableCell
-                              align={COLUMNS[6].align}
-                              sx={{
-                                width: COLUMNS[6].width,
-                                minWidth: COLUMNS[6].minWidth,
-                              }}
-                            >
+                            <TableCell sx={{ width: COL_WIDTHS.date, minWidth: COL_WIDTHS.date }}>
                               <MDTypography
                                 variant="caption"
-                                sx={{
-                                  color: brand.textSecondary,
-                                  whiteSpace: "nowrap",
-                                }}
+                                sx={{ color: brand.textSecondary, whiteSpace: "nowrap" }}
                               >
                                 {formatDate(product.createdAt)}
                               </MDTypography>
                             </TableCell>
 
                             <TableCell
-                              align={COLUMNS[7].align}
-                              sx={{
-                                width: COLUMNS[7].width,
-                                minWidth: COLUMNS[7].minWidth,
-                              }}
+                              sx={{ width: COL_WIDTHS.actions, minWidth: COL_WIDTHS.actions }}
                             >
-                              <MDBox display="flex" gap={0.75} alignItems="center">
+                              <MDBox display="flex" gap={0.75}>
                                 <IconButton
                                   size="small"
                                   onClick={() => handleOpenEdit(product)}
                                   sx={{
                                     backgroundColor: brand.status.info.bg,
+
                                     borderRadius: "8px",
+
                                     transition: "all 0.2s ease",
-                                    "&:hover": { backgroundColor: "rgba(99,102,241,0.22)", transform: "scale(1.05)" },
+
+                                    "&:hover": {
+                                      backgroundColor: "rgba(99,102,241,0.22)",
+                                      transform: "scale(1.05)",
+                                    },
                                   }}
                                 >
                                   <Icon fontSize="small" sx={{ color: brand.status.info.color }}>
                                     edit
                                   </Icon>
                                 </IconButton>
+
                                 <IconButton
                                   size="small"
                                   onClick={() => handleOpenDelete(product)}
                                   sx={{
                                     backgroundColor: brand.status.error.bg,
+
                                     borderRadius: "8px",
+
                                     transition: "all 0.2s ease",
-                                    "&:hover": { backgroundColor: "rgba(239,68,68,0.22)", transform: "scale(1.05)" },
+
+                                    "&:hover": {
+                                      backgroundColor: "rgba(239,68,68,0.22)",
+                                      transform: "scale(1.05)",
+                                    },
                                   }}
                                 >
                                   <Icon fontSize="small" sx={{ color: brand.status.error.color }}>
@@ -916,85 +951,46 @@ function Products() {
                       })}
                     </TableBody>
                   </Table>
-
                 </TableContainer>
-
               )}
-
             </MDBox>
-
           </Card>
-
         </Fade>
-
       </MDBox>
 
       <Footer />
 
-
-
       <ProductFormDialog
-
         open={formOpen}
-
         onClose={() => setFormOpen(false)}
-
         onSubmit={handleFormSubmit}
-
         formData={formData}
-
         onChange={handleFormChange}
-
         errors={formErrors}
-
         loading={formLoading}
-
         isEdit={Boolean(selectedProduct)}
-
       />
-
-
 
       <DeleteConfirmDialog
-
         open={deleteOpen}
-
         onClose={() => setDeleteOpen(false)}
-
         onConfirm={handleDeleteConfirm}
-
         productName={selectedProduct?.name}
-
         loading={deleteLoading}
-
       />
 
-
-
       <Snackbar
-
         open={snackbar.open}
-
         autoHideDuration={4000}
-
         onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-
         TransitionComponent={Grow}
-
       >
-
         <Alert
-
           onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-
           severity={snackbar.severity}
-
           variant="filled"
-
           sx={{
-
             width: "100%",
 
             borderRadius: "12px",
@@ -1002,24 +998,13 @@ function Products() {
             boxShadow: brand.shadowCardHover,
 
             ...(snackbar.severity === "success" && { backgroundColor: brand.status.success.color }),
-
           }}
-
         >
-
           {snackbar.message}
-
         </Alert>
-
       </Snackbar>
-
     </DashboardLayout>
-
   );
-
 }
 
-
-
 export default Products;
-
