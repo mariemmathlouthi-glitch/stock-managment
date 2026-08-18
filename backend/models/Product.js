@@ -31,11 +31,16 @@ const productSchema = new mongoose.Schema(
     currency: {
       type: String,
       required: [true, "La devise est requise"],
-      default: "EUR",
+      default: "TND",
     },
     imageUrl: {
       type: String,
       default: "",
+    },
+    minStockThreshold: {
+      type: Number,
+      min: [0, "Le seuil de stock ne peut pas être négatif"],
+      default: 5,
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,

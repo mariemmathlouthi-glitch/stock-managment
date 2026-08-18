@@ -6,6 +6,8 @@ const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const productRoutes = require("./routes/productRoutes");
+const supplierRoutes = require("./routes/supplierRoutes");
+const purchaseOrderRoutes = require("./routes/purchaseOrderRoutes");
 const User = require("./models/User");
 const bcrypt = require("bcryptjs");
 
@@ -16,6 +18,8 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/suppliers", supplierRoutes);
+app.use("/api/purchase-orders", purchaseOrderRoutes);
 console.log("Routes utilisateurs, dashboard et produits chargées");
 connectDB();
 

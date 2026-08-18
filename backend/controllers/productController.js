@@ -24,7 +24,7 @@ const findProductWithAccess = async (req, productId) => {
 
 const createProduct = async (req, res) => {
   try {
-    const { name, description, category, quantity, price, currency, imageUrl } = req.body;
+    const { name, description, category, quantity, price, currency, imageUrl, minStockThreshold } = req.body;
 
     if (!name || !category || quantity === undefined || price === undefined || !currency) {
       return res.status(400).json({
@@ -40,6 +40,7 @@ const createProduct = async (req, res) => {
       price,
       currency,
       imageUrl: imageUrl || "",
+      minStockThreshold: minStockThreshold !== undefined ? Number(minStockThreshold) : 5,
       owner: req.user.id,
     });
 
@@ -77,7 +78,7 @@ const updateProduct = async (req, res) => {
     const { product, error } = await findProductWithAccess(req, req.params.id);
     if (error) return res.status(error.status).json({ message: error.message });
 
-    const { name, description, category, quantity, price, currency, imageUrl } = req.body;
+    const { name, description, category, quantity, price, currency, imageUrl, minStockThreshold } = req.body;
 
     if (name !== undefined) product.name = name;
     if (description !== undefined) product.description = description;
@@ -86,6 +87,7 @@ const updateProduct = async (req, res) => {
     if (price !== undefined) product.price = price;
     if (currency !== undefined) product.currency = currency;
     if (imageUrl !== undefined) product.imageUrl = imageUrl;
+    if (minStockThreshold !== undefined) product.minStockThreshold = Number(minStockThreshold);
 
     await product.save();
     res.json({ message: "Produit mis à jour avec succès.", product });

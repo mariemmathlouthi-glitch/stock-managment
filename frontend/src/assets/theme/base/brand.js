@@ -76,6 +76,8 @@ export function getBrandTokens(isDark = true) {
   return isDark ? darkTokens : lightTokens;
 }
 
+export const getBrand = getBrandTokens;
+
 // Default export for backward compatibility (dark mode)
 const brand = darkTokens;
 export default brand;

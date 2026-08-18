@@ -39,21 +39,19 @@ const EMPTY_USER = {
 };
 
 const DEFAULT_PREFERENCES = {
-  lowStock: true,
-  outOfStock: true,
-  newOrder: false,
-  weeklyReport: true,
-  email: true,
-  browser: false,
   compact: false,
   animations: true,
 };
 
 const getStoredPreferences = () => {
   try {
+    const savedPreferences = JSON.parse(localStorage.getItem("profilePreferences") || "{}");
     return {
-      ...DEFAULT_PREFERENCES,
-      ...JSON.parse(localStorage.getItem("profilePreferences") || "{}"),
+      compact: Boolean(savedPreferences.compact),
+      animations:
+        typeof savedPreferences.animations === "boolean"
+          ? savedPreferences.animations
+          : DEFAULT_PREFERENCES.animations,
     };
   } catch {
     return DEFAULT_PREFERENCES;
@@ -222,7 +220,7 @@ PreferenceRow.defaultProps = {
 
 function Profile() {
   const [controller, dispatch] = useMaterialUIController();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const brand = getBrand(controller.darkMode);
   const [user, setUser] = useState(getStoredUser);
   const [draft, setDraft] = useState(user);
@@ -232,7 +230,7 @@ function Profile() {
   const [activeTab, setActiveTab] = useState("information");
   const [preferences, setPreferences] = useState(getStoredPreferences);
   const [activities] = useState(getStoredActivity);
-  const [notification, setNotification] = useState({
+  const [feedback, setFeedback] = useState({
     open: false,
     message: "",
     severity: "success",
@@ -291,7 +289,7 @@ function Profile() {
     setUser(nextUser);
     setSaving(false);
     setEditOpen(false);
-    setNotification({
+    setFeedback({
       open: true,
       message: "Informations du profil mises à jour.",
       severity: "success",
@@ -315,7 +313,7 @@ function Profile() {
     setPreferences(DEFAULT_PREFERENCES);
     localStorage.setItem("profilePreferences", JSON.stringify(DEFAULT_PREFERENCES));
     setDarkMode(dispatch, true);
-    setNotification({ open: true, message: "Préférences réinitialisées.", severity: "success" });
+    setFeedback({ open: true, message: "Préférences réinitialisées.", severity: "success" });
   };
 
   const changeLanguage = (event) => {
@@ -325,10 +323,9 @@ function Profile() {
   };
 
   const tabs = [
-    { id: "information", label: "Informations", icon: "person_outline" },
-    { id: "history", label: "Historique", icon: "schedule" },
-    { id: "notifications", label: "Notifications", icon: "notifications_none" },
-    { id: "preferences", label: "Préférences", icon: "palette_outlined" },
+    { id: "information", label: t("profile_page.tabs.information"), icon: "person_outline" },
+    { id: "history", label: t("profile_page.tabs.history"), icon: "schedule" },
+    { id: "preferences", label: t("profile_page.tabs.preferences"), icon: "palette_outlined" },
   ];
 
   return (
@@ -376,7 +373,7 @@ function Profile() {
                 </MDTypography>
               </MDBox>
               <MDTypography variant="h3" fontWeight="bold" sx={{ color: brand.textPrimary }}>
-                Mon profil
+                {t("profile_page.title")}
               </MDTypography>
               <MDTypography variant="body2" sx={{ color: brand.textSecondary, mt: 0.5 }}>
                 Consultez et gérez les informations associées à votre compte.
@@ -443,7 +440,7 @@ function Profile() {
                           "&:hover": { background: brand.gradientButtonHover },
                         }}
                       >
-                        Modifier
+                        {t("common.edit")}
                       </MDButton>
                     </MDBox>
                   </Grid>
@@ -461,9 +458,9 @@ function Profile() {
                         fontWeight="bold"
                         sx={{ color: brand.textPrimary }}
                       >
-                        Informations personnelles
+                        {t("profile_page.personal_information")}
                       </MDTypography>
-                      <Tooltip title="Modifier les informations">
+                      <Tooltip title={t("profile_page.edit_information")}>
                         <MDButton
                           iconOnly
                           onClick={() => setEditOpen(true)}
@@ -478,13 +475,18 @@ function Profile() {
                       <Grid item xs={12} sm={6}>
                         <InfoItem
                           icon="person_outline"
-                          label="Prénom"
+                          label={t("profile_page.first_name")}
                           value={user.prenom}
                           brand={brand}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <InfoItem icon="badge" label="Nom" value={user.nom} brand={brand} />
+                        <InfoItem
+                          icon="badge"
+                          label={t("profile_page.last_name")}
+                          value={user.nom}
+                          brand={brand}
+                        />
                       </Grid>
                       <Grid item xs={12} sm={6}>
                         <InfoItem
@@ -510,22 +512,22 @@ function Profile() {
                 <Card sx={{ ...cardSx, height: "100%" }}>
                   <MDBox p={3}>
                     <MDTypography variant="h6" fontWeight="bold" sx={{ color: brand.textPrimary }}>
-                      Compte
+                      {t("profile_page.account")}
                     </MDTypography>
                     <MDTypography variant="caption" sx={{ color: brand.textSecondary }}>
-                      Informations de votre session active
+                      {t("profile_page.active_session")}
                     </MDTypography>
                     <Divider sx={{ my: 2, borderColor: brand.inputBorder }} />
                     <InfoItem
                       icon="admin_panel_settings"
-                      label="Rôle"
+                      label={t("profile_page.role")}
                       value={getRoleLabel(user.role)}
                       brand={brand}
                     />
                     <InfoItem
                       icon="shield_outlined"
                       label="Accès"
-                      value="Compte authentifié"
+                      value={t("profile_page.authenticated_account")}
                       brand={brand}
                     />
                     <MDBox
@@ -578,7 +580,7 @@ function Profile() {
                     mt={1.5}
                     sx={{ color: brand.textPrimary }}
                   >
-                    Aucune activité récente
+                    {t("profile_page.no_recent_activity")}
                   </MDTypography>
                   <MDTypography variant="caption" sx={{ color: brand.textSecondary }}>
                     Les créations, modifications et suppressions de produits apparaîtront ici.
@@ -640,110 +642,6 @@ function Profile() {
           </Card>
         )}
 
-        {activeTab === "notifications" && (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card sx={cardSx}>
-                <MDBox p={{ xs: 2.5, sm: 3.5 }}>
-                  <MDTypography
-                    variant="caption"
-                    fontWeight="bold"
-                    sx={{ color: brand.textSecondary, letterSpacing: 0.8 }}
-                  >
-                    ALERTES PRODUITS
-                  </MDTypography>
-                  <Divider sx={{ my: 1.5, borderColor: brand.inputBorder }} />
-                  <PreferenceRow
-                    icon="warning_amber"
-                    iconColor="#fbbf24"
-                    title="Stock faible"
-                    description="Alerte quand un produit passe sous le seuil"
-                    checked={preferences.lowStock}
-                    onChange={(event) => updatePreference("lowStock", event.target.checked)}
-                    brand={brand}
-                  />
-                  <Divider sx={{ borderColor: brand.inputBorder }} />
-                  <PreferenceRow
-                    icon="inventory_2"
-                    iconColor="#f87171"
-                    title="Rupture de stock"
-                    description="Notification immédiate à zéro unité"
-                    checked={preferences.outOfStock}
-                    onChange={(event) => updatePreference("outOfStock", event.target.checked)}
-                    brand={brand}
-                  />
-                  <Divider sx={{ borderColor: brand.inputBorder }} />
-                  <PreferenceRow
-                    icon="shopping_cart"
-                    iconColor="#818cf8"
-                    title="Nouvelle commande"
-                    description="Chaque commande entrante dans le système"
-                    checked={preferences.newOrder}
-                    onChange={(event) => updatePreference("newOrder", event.target.checked)}
-                    brand={brand}
-                  />
-                  <Divider sx={{ borderColor: brand.inputBorder }} />
-                  <PreferenceRow
-                    icon="bar_chart"
-                    iconColor="#a855f7"
-                    title="Rapport hebdomadaire"
-                    description="Résumé chaque lundi matin"
-                    checked={preferences.weeklyReport}
-                    onChange={(event) => updatePreference("weeklyReport", event.target.checked)}
-                    brand={brand}
-                  />
-                </MDBox>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card sx={cardSx}>
-                <MDBox p={{ xs: 2.5, sm: 3.5 }}>
-                  <MDTypography
-                    variant="caption"
-                    fontWeight="bold"
-                    sx={{ color: brand.textSecondary, letterSpacing: 0.8 }}
-                  >
-                    CANAUX DE RÉCEPTION
-                  </MDTypography>
-                  <Divider sx={{ my: 1.5, borderColor: brand.inputBorder }} />
-                  <PreferenceRow
-                    icon="mail_outline"
-                    iconColor="#ff2f6d"
-                    title="E-mail"
-                    description={user.email || "Adresse e-mail non renseignée"}
-                    checked={preferences.email}
-                    onChange={(event) => updatePreference("email", event.target.checked)}
-                    brand={brand}
-                  />
-                  <Divider sx={{ borderColor: brand.inputBorder }} />
-                  <PreferenceRow
-                    icon="notifications_none"
-                    iconColor="#818cf8"
-                    title="Notifications navigateur"
-                    description="Alertes affichées dans ce navigateur"
-                    checked={preferences.browser}
-                    onChange={(event) => updatePreference("browser", event.target.checked)}
-                    brand={brand}
-                  />
-                  <MDBox
-                    mt={2.5}
-                    p={2}
-                    borderRadius="12px"
-                    sx={{
-                      backgroundColor: brand.inputBg,
-                      border: `1px solid ${brand.inputBorder}`,
-                    }}
-                  >
-                    <MDTypography variant="caption" sx={{ color: brand.textSecondary }}>
-                      Les réglages sont enregistrés pour votre compte sur cet appareil.
-                    </MDTypography>
-                  </MDBox>
-                </MDBox>
-              </Card>
-            </Grid>
-          </Grid>
-        )}
-
         {activeTab === "preferences" && (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
@@ -791,7 +689,7 @@ function Profile() {
                         color: brand.textPrimary,
                       }}
                     >
-                      🌙 Sombre
+                      🌙 {t("profile_page.dark")}
                     </MDButton>
                     <MDButton
                       variant="outlined"
@@ -802,7 +700,7 @@ function Profile() {
                         color: brand.textPrimary,
                       }}
                     >
-                      ☀️ Clair
+                      ☀️ {t("profile_page.light")}
                     </MDButton>
                   </MDBox>
                 </MDBox>
@@ -841,7 +739,7 @@ function Profile() {
                     onClick={resetPreferences}
                     sx={{ borderColor: brand.inputBorder, color: brand.textSecondary }}
                   >
-                    Réinitialiser les préférences
+                    {t("profile_page.reset_preferences")}
                   </MDButton>
                 </MDBox>
               </Card>
@@ -860,7 +758,7 @@ function Profile() {
       >
         <MDBox component="form" onSubmit={handleSave} noValidate>
           <DialogTitle sx={{ color: brand.textPrimary, fontWeight: 700 }}>
-            Modifier mon profil
+            {t("profile_page.edit_profile")}
           </DialogTitle>
           <DialogContent>
             <MDTypography
@@ -871,8 +769,8 @@ function Profile() {
             </MDTypography>
             <Grid container spacing={2}>
               {[
-                ["prenom", "Prénom", "person_outline"],
-                ["nom", "Nom", "badge"],
+                ["prenom", t("profile_page.first_name"), "person_outline"],
+                ["nom", t("profile_page.last_name"), "badge"],
                 ["email", "Adresse e-mail", "mail_outline"],
                 ["telephone", "Téléphone", "phone_outlined"],
                 ["photoUrl", "URL de la photo (optionnel)", "image_outlined"],
@@ -917,7 +815,7 @@ function Profile() {
               disabled={saving}
               sx={{ borderColor: brand.inputBorder }}
             >
-              Annuler
+              {t("common.cancel")}
             </MDButton>
             <MDButton
               type="submit"
@@ -929,20 +827,20 @@ function Profile() {
                 borderRadius: "10px",
               }}
             >
-              {saving ? <CircularProgress size={18} color="inherit" /> : "Enregistrer"}
+              {saving ? <CircularProgress size={18} color="inherit" /> : t("common.save")}
             </MDButton>
           </DialogActions>
         </MDBox>
       </Dialog>
 
       <Snackbar
-        open={notification.open}
+        open={feedback.open}
         autoHideDuration={4000}
-        onClose={() => setNotification((previous) => ({ ...previous, open: false }))}
+        onClose={() => setFeedback((previous) => ({ ...previous, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert severity={notification.severity} variant="filled">
-          {notification.message}
+        <Alert severity={feedback.severity} variant="filled">
+          {feedback.message}
         </Alert>
       </Snackbar>
     </DashboardLayout>

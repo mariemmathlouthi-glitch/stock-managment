@@ -59,6 +59,7 @@ import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 
 import brand from "assets/theme/base/brand";
+import { formatCurrency, useCurrency } from "utils/currency";
 
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from "api/products";
 
@@ -78,11 +79,10 @@ const EMPTY_FORM = {
   category: "",
   quantity: "",
   price: "",
-  currency: "EUR",
+  currency: "TND",
   imageUrl: "",
+  minStockThreshold: 5,
 };
-
-
 
 const productSchema = yup.object().shape({
   name: yup.string().trim().required("Le nom est requis"),
@@ -104,25 +104,22 @@ const productSchema = yup.object().shape({
     .url("Veuillez entrer une URL valide")
     .optional()
     .nullable(),
+  minStockThreshold: yup
+    .number()
+    .typeError("Le seuil doit être un nombre")
+    .min(0, "Le seuil ne peut pas être négatif")
+    .required("Le seuil de stock minimum est requis"),
 });
 
-
-
-const getStockStatus = (quantity) => {
-
+const getStockStatus = (quantity, minStockThreshold = 5) => {
   if (quantity <= 0) return { label: "Rupture", ...brand.status.error };
-
-  if (quantity <= LOW_STOCK_THRESHOLD) return { label: "Stock faible", ...brand.status.warning };
-
+  if (quantity <= (minStockThreshold ?? 5)) return { label: "Stock faible", ...brand.status.warning };
   return { label: "En stock", ...brand.status.success };
-
 };
 
 
 
-const formatPrice = (price, currency = "EUR") =>
-
-  new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(price);
+const formatPrice = (price, currency) => formatCurrency(price, currency);
 
 
 
@@ -287,6 +284,7 @@ function StatusChip({ label, color, bg }) {
 }
 
 function Products() {
+  const currency = useCurrency();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -319,6 +317,23 @@ function Products() {
 
   useEffect(() => {
     loadProducts();
+
+    const refreshStock = async () => {
+      try {
+        const data = await fetchProducts();
+        setProducts(data.products || []);
+      } catch {
+        // Le prochain rafraîchissement réessaiera sans interrompre l'utilisation de la page.
+      }
+    };
+
+    const refreshInterval = window.setInterval(refreshStock, 3000);
+    window.addEventListener("focus", refreshStock);
+
+    return () => {
+      window.clearInterval(refreshInterval);
+      window.removeEventListener("focus", refreshStock);
+    };
   }, [loadProducts]);
 
   const categories = useMemo(
@@ -329,7 +344,7 @@ function Products() {
   const stats = useMemo(() => {
     const totalProducts = products.length;
     const stockValue = products.reduce((sum, p) => sum + p.price * p.quantity, 0);
-    const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= LOW_STOCK_THRESHOLD).length;
+    const lowStock = products.filter((p) => p.quantity > 0 && p.quantity <= (p.minStockThreshold ?? 5)).length;
     return { totalProducts, stockValue, lowStock, categories: categories.length };
   }, [products, categories]);
 
@@ -343,7 +358,7 @@ function Products() {
 
       const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
 
-      const status = getStockStatus(product.quantity).label;
+      const status = getStockStatus(product.quantity, product.minStockThreshold).label;
       const statusMap = { all: true, "En stock": status === "En stock", "Stock faible": status === "Stock faible", Rupture: status === "Rupture" };
       const matchesStatus = statusMap[statusFilter];
 
@@ -353,7 +368,7 @@ function Products() {
 
   const handleOpenCreate = () => {
     setSelectedProduct(null);
-    setFormData(EMPTY_FORM);
+    setFormData({ ...EMPTY_FORM, currency });
     setFormErrors({});
     setFormOpen(true);
   };
@@ -366,8 +381,9 @@ function Products() {
       category: product.category,
       quantity: product.quantity,
       price: product.price,
-      currency: product.currency || "EUR",
+      currency: product.currency || currency,
       imageUrl: product.imageUrl || "",
+      minStockThreshold: product.minStockThreshold !== undefined ? product.minStockThreshold : 5,
     });
     setFormErrors({});
     setFormOpen(true);
@@ -396,6 +412,7 @@ function Products() {
         price: formData.price === "" ? undefined : Number(formData.price),
         currency: formData.currency,
         imageUrl: formData.imageUrl,
+        minStockThreshold: formData.minStockThreshold === "" ? undefined : Number(formData.minStockThreshold),
       };
       const validatedPayload = await productSchema.validate(payload, { abortEarly: false });
       setFormErrors({});
@@ -484,7 +501,7 @@ function Products() {
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
               title="Valeur du Stock"
-              value={formatPrice(stats.stockValue)}
+              value={formatPrice(stats.stockValue, currency)}
               icon="trending_up"
               iconColor={brand.status.success.color}
               iconBg={brand.status.success.bg}
@@ -695,7 +712,7 @@ function Products() {
                     </TableHead>
                     <TableBody>
                       {filteredProducts.map((product, index) => {
-                        const status = getStockStatus(product.quantity);
+                        const status = getStockStatus(product.quantity, product.minStockThreshold);
                         return (
                           <TableRow
                             key={product._id}
@@ -833,16 +850,28 @@ function Products() {
                                 minWidth: COLUMNS[4].minWidth,
                               }}
                             >
-                              <MDTypography
-                                variant="button"
-                                fontWeight="medium"
-                                sx={{
-                                  color: status.color,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {product.quantity} unités
-                              </MDTypography>
+                              <MDBox>
+                                <MDTypography
+                                  variant="button"
+                                  fontWeight="medium"
+                                  sx={{
+                                    color: status.color,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {product.quantity} unités
+                                </MDTypography>
+                                <MDTypography
+                                  variant="caption"
+                                  display="block"
+                                  sx={{
+                                    color: brand.textSecondary,
+                                    fontSize: "0.68rem",
+                                  }}
+                                >
+                                  Seuil : {product.minStockThreshold ?? 5}
+                                </MDTypography>
+                              </MDBox>
                             </TableCell>
 
                             <TableCell
@@ -1022,4 +1051,3 @@ function Products() {
 
 
 export default Products;
-

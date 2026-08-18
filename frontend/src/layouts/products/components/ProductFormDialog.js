@@ -16,7 +16,7 @@ import MDTypography from "components/MDTypography";
 import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 
-import { getBrand } from "assets/theme/base/brand";
+import { getBrandTokens } from "assets/theme/base/brand";
 import { useMaterialUIController } from "context";
 
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
@@ -25,7 +25,7 @@ Transition.displayName = "DialogTransition";
 function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors, loading, isEdit }) {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
-  const brand = useMemo(() => getBrand(darkMode), [darkMode]);
+  const brand = useMemo(() => getBrandTokens(darkMode), [darkMode]);
 
   const total = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.price) || 0);
   const currencySymbol =
@@ -215,6 +215,28 @@ function ProductFormDialog({ open, onClose, onSubmit, formData, onChange, errors
               )}
             </Grid>
 
+            <Grid item xs={12} sm={6}>
+              <MDTypography variant="caption" sx={labelSx}>
+                SEUIL DE STOCK MINIMUM (ALERTE) <span style={{ color: brand.accent }}>*</span>
+              </MDTypography>
+              <MDInput
+                name="minStockThreshold"
+                type="number"
+                value={formData.minStockThreshold !== undefined ? formData.minStockThreshold : ""}
+                onChange={onChange}
+                fullWidth
+                error={Boolean(errors.minStockThreshold)}
+                placeholder="5"
+                inputProps={{ min: 0 }}
+                InputProps={{ sx: inputStyles }}
+              />
+              {errors.minStockThreshold && (
+                <MDTypography variant="caption" color="error" mt={0.5} display="block">
+                  {errors.minStockThreshold}
+                </MDTypography>
+              )}
+            </Grid>
+
             <Grid item xs={12} sm={8}>
               <MDTypography variant="caption" sx={labelSx}>
                 PRIX UNITAIRE <span style={{ color: brand.accent }}>*</span>
@@ -345,6 +367,7 @@ ProductFormDialog.propTypes = {
     price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     currency: PropTypes.string,
     imageUrl: PropTypes.string,
+    minStockThreshold: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   errors: PropTypes.object.isRequired,

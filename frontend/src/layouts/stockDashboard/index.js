@@ -26,11 +26,13 @@ import PieChart from "examples/Charts/PieChart";
 
 // API
 import { fetchProducts } from "api/products";
+import { getCurrencyLabel, useCurrency } from "utils/currency";
 
 function StockDashboard() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const currency = useCurrency();
 
   // Obtenir la date du jour formatée
   const today = new Date().toLocaleDateString("fr-FR", {
@@ -66,11 +68,12 @@ function StockDashboard() {
 
     products.forEach((p) => {
       const qty = Number(p.quantity) || 0;
+      const threshold = p.minStockThreshold !== undefined ? Number(p.minStockThreshold) : 5;
       const price = Number(p.price) || 0;
       const cat = p.category || "Non catégorisé";
 
       if (qty === 0) outOfStock++;
-      else if (qty <= 10) lowStock++; // 10 est le seuil de stock faible utilisé dans Products
+      else if (qty <= threshold) lowStock++;
       else inStock++;
 
       categoriesSet.add(cat);
@@ -91,7 +94,10 @@ function StockDashboard() {
 
     const chartValue = {
       labels: categoryLabels,
-      datasets: { label: "Valeur totale (€)", data: categoryLabels.map((c) => categoryValue[c]) },
+      datasets: {
+        label: `Valeur totale (${getCurrencyLabel(currency)})`,
+        data: categoryLabels.map((c) => categoryValue[c]),
+      },
     };
 
     const colors = ["info", "primary", "dark", "secondary", "success", "warning", "error"];
@@ -105,14 +111,28 @@ function StockDashboard() {
     };
 
     const alerts = products
-      .filter((p) => Number(p.quantity) <= 10)
-      .map((p, index) => ({
-        id: p._id || index,
-        icon: Number(p.quantity) === 0 ? "error" : "warning",
-        color: Number(p.quantity) === 0 ? "error" : "warning",
-        title: Number(p.quantity) === 0 ? "Rupture de stock" : "Stock faible",
-        description: `Le produit '${p.name}' a une quantité de ${p.quantity}.`,
-      }));
+      .filter((p) => {
+        const qty = Number(p.quantity) || 0;
+        const threshold = p.minStockThreshold !== undefined ? Number(p.minStockThreshold) : 5;
+        return qty <= threshold;
+      })
+      .map((p, index) => {
+        const qty = Number(p.quantity) || 0;
+        const threshold = p.minStockThreshold !== undefined ? Number(p.minStockThreshold) : 5;
+        const isRupture = qty === 0;
+        return {
+          id: p._id || index,
+          productId: p._id,
+          productName: p.name,
+          category: p.category || "Non catégorisé",
+          quantity: qty,
+          threshold: threshold,
+          icon: isRupture ? "error" : "warning",
+          color: isRupture ? "error" : "warning",
+          title: isRupture ? `Rupture : ${p.name}` : `Stock faible : ${p.name}`,
+          description: `Produit: '${p.name}' | Stock actuel: ${qty} | Seuil d'alerte: ${threshold}`,
+        };
+      });
 
     return {
       total: products.length,
@@ -125,7 +145,7 @@ function StockDashboard() {
       pieChart,
       alerts,
     };
-  }, [products]);
+  }, [products, currency]);
 
   const handleAddProduct = () => {
     navigate("/products");
@@ -219,7 +239,7 @@ function StockDashboard() {
                     percentage={{
                       color: "warning",
                       amount: "",
-                      label: "Seuil critique (≤10)",
+                      label: "Stock ≤ seuil du produit",
                     }}
                   />
                 </MDBox>
@@ -295,16 +315,43 @@ function StockDashboard() {
                   <MDBox pb={2} px={2} sx={{ maxHeight: "400px", overflow: "auto" }}>
                     {stats.alerts.length > 0 ? (
                       stats.alerts.map((alert) => (
-                        <MDBox key={alert.id} p={2} mb={2} bgColor="grey-100" borderRadius="lg">
-                          <MDBox display="flex" alignItems="center" mb={1}>
-                            <Icon color={alert.color}>{alert.icon}</Icon>
-                            <MDTypography variant="button" fontWeight="medium" ml={1}>
-                              {alert.title}
-                            </MDTypography>
+                        <MDBox
+                          key={alert.id}
+                          p={2}
+                          mb={2}
+                          bgColor="grey-100"
+                          borderRadius="lg"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="space-between"
+                        >
+                          <MDBox display="flex" alignItems="center" gap={1.5}>
+                            <Icon color={alert.color} fontSize="medium">
+                              {alert.icon}
+                            </Icon>
+                            <MDBox>
+                              <MDBox display="flex" alignItems="center" gap={1}>
+                                <MDTypography variant="button" fontWeight="bold" sx={{ color: brand.textPrimary }}>
+                                  {alert.productName}
+                                </MDTypography>
+                                <MDTypography variant="caption" sx={{ color: brand.textSecondary, opacity: 0.8 }}>
+                                  ({alert.category})
+                                </MDTypography>
+                              </MDBox>
+                              <MDTypography variant="caption" color="text" display="block">
+                                Stock actuel : <strong>{alert.quantity}</strong> | Seuil alerte : <strong>{alert.threshold}</strong>
+                              </MDTypography>
+                            </MDBox>
                           </MDBox>
-                          <MDTypography variant="caption" color="text">
-                            {alert.description}
-                          </MDTypography>
+                          <MDButton
+                            variant="outlined"
+                            color={alert.color}
+                            size="small"
+                            onClick={() => navigate("/products")}
+                            sx={{ minWidth: "75px" }}
+                          >
+                            Modifier
+                          </MDButton>
                         </MDBox>
                       ))
                     ) : (

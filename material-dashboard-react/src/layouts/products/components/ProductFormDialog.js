@@ -16,6 +16,7 @@ import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 import { getBrand } from "assets/theme/base/brand";
 import { useMaterialUIController } from "context";
+import { formatCurrency, useCurrency } from "utils/currency";
 
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = "DialogTransition";
@@ -33,6 +34,8 @@ function ProductFormDialog({
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
   const brand = getBrand(darkMode);
+  const defaultCurrency = useCurrency();
+  const currency = formData.currency || defaultCurrency;
 
   const inputStyles = {
     backgroundColor: brand.inputBg,
@@ -75,8 +78,6 @@ function ProductFormDialog({
   };
 
   const total = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.price) || 0);
-  const currencySymbol =
-    formData.currency === "TND" ? "TND" : formData.currency === "USD" ? "$" : "€";
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -149,7 +150,7 @@ function ProductFormDialog({
       <DialogContent sx={{ px: 3 }}>
         <MDBox component="form" id="product-form" pt={1} onSubmit={handleSubmit} noValidate>
           <Grid container spacing={2.5}>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={8}>
               <MDTypography variant="caption" sx={labelSx}>
                 NOM DU PRODUIT <span style={{ color: brand.accent }}>*</span>
               </MDTypography>
@@ -227,7 +228,7 @@ function ProductFormDialog({
               )}
             </Grid>
 
-            <Grid item xs={12} sm={8}>
+            <Grid item xs={12}>
               <MDTypography variant="caption" sx={labelSx}>
                 PRIX UNITAIRE <span style={{ color: brand.accent }}>*</span>
               </MDTypography>
@@ -256,14 +257,14 @@ function ProductFormDialog({
               <MDInput
                 select
                 name="currency"
-                value={formData.currency || "EUR"}
+                value={currency}
                 onChange={onChange}
                 fullWidth
                 InputProps={{ sx: inputStyles }}
               >
                 <MenuItem value="EUR">Euro (€)</MenuItem>
-                <MenuItem value="TND">Dinar (TND)</MenuItem>
-                <MenuItem value="USD">Dollar ($)</MenuItem>
+                <MenuItem value="TND">Dinar tunisien (TND)</MenuItem>
+                <MenuItem value="USD">Dollar américain ($)</MenuItem>
               </MDInput>
               {errors.currency && (
                 <MDTypography variant="caption" color="error" mt={0.5} display="block">
@@ -308,13 +309,7 @@ function ProductFormDialog({
               sx={{ color: brand.textPrimary, display: "flex", justifyContent: "space-between" }}
             >
               <span>Total Estimé :</span>
-              <span style={{ color: brand.accent }}>
-                {total.toLocaleString("fr-FR", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
-                {currencySymbol}
-              </span>
+              <span style={{ color: brand.accent }}>{formatCurrency(total, currency)}</span>
             </MDTypography>
           </MDBox>
         </MDBox>

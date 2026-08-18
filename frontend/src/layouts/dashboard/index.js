@@ -12,6 +12,8 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import PremiumStatCard from "layouts/dashboard/components/PremiumStatCard";
 import brand from "assets/theme/base/brand";
+import { fetchProducts } from "api/products";
+import { formatCurrency, getCurrencyLabel, useCurrency } from "utils/currency";
 
 import { Line, Doughnut } from "react-chartjs-2";
 import {
@@ -38,6 +40,24 @@ const gradientChartLine = (ctx, colorStr) => {
 
 function Dashboard() {
   const { t } = useTranslation();
+  const [products, setProducts] = useState([]);
+  const currency = useCurrency();
+
+  useEffect(() => {
+    fetchProducts()
+      .then((data) => setProducts(data.products || []))
+      .catch(() => setProducts([]));
+  }, []);
+
+  const stockValue = useMemo(
+    () =>
+      products.reduce(
+        (total, product) =>
+          total + (Number(product.quantity) || 0) * (Number(product.price) || 0),
+        0
+      ),
+    [products]
+  );
 
   const lineChartOptions = {
     responsive: true,
@@ -163,7 +183,7 @@ function Dashboard() {
               iconBg="rgba(74,222,128,0.15)"
               title="VALEUR DU STOCK"
               subtitle="vs mois dernier"
-              value="84 320 €"
+              value={formatCurrency(stockValue)}
               trend="up"
               trendValue="↗ +8.4%"
             />
@@ -200,7 +220,7 @@ function Dashboard() {
                       ÉVOLUTION ANNUELLE
                     </MDTypography>
                     <MDTypography variant="h5" fontWeight="bold" sx={{ color: brand.textPrimary }}>
-                      Valeur du stock (€)
+                      Valeur du stock ({getCurrencyLabel(currency)})
                     </MDTypography>
                   </MDBox>
                   <MDBox display="flex" sx={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "8px", p: 0.5 }}>

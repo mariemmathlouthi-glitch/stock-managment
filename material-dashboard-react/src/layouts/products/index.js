@@ -62,6 +62,7 @@ import MDInput from "components/MDInput";
 import MDButton from "components/MDButton";
 
 import { getBrand } from "assets/theme/base/brand";
+import { formatCurrency, useCurrency } from "utils/currency";
 
 import { fetchProducts, createProduct, updateProduct, deleteProduct } from "api/products";
 
@@ -89,7 +90,6 @@ const EMPTY_FORM = {
   category: "",
   quantity: "",
   price: "",
-  currency: "EUR",
   imageUrl: "",
 };
 
@@ -121,9 +121,6 @@ const getStockStatus = (quantity, brand) => {
 
   return { label: "En stock", ...brand.status.success };
 };
-
-const formatPrice = (price) =>
-  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(price);
 
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
@@ -262,6 +259,7 @@ StatusChip.propTypes = {
 function Products() {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
+  const currency = useCurrency();
   const brand = getBrand(darkMode);
   const inputStyles = makeInputStyles(brand);
   const buttonGradientSx = makeButtonGradientSx(brand);
@@ -280,7 +278,7 @@ function Products() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  const showNotification = (message, severity = "success") => {
+  const showFeedback = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
 
@@ -313,7 +311,7 @@ function Products() {
       const data = await fetchProducts();
       setProducts(data.products || []);
     } catch (error) {
-      showNotification(error.message, "error");
+      showFeedback(error.message, "error");
     } finally {
       setLoading(false);
     }
@@ -321,7 +319,28 @@ function Products() {
 
   useEffect(() => {
     loadProducts();
+
+    const refreshStock = async () => {
+      try {
+        const data = await fetchProducts();
+        setProducts(data.products || []);
+      } catch {
+        // Le prochain rafraîchissement réessaiera sans interrompre l'utilisation de la page.
+      }
+    };
+
+    const refreshInterval = window.setInterval(refreshStock, 3000);
+    window.addEventListener("focus", refreshStock);
+
+    return () => {
+      window.clearInterval(refreshInterval);
+      window.removeEventListener("focus", refreshStock);
+    };
   }, [loadProducts]);
+
+  useEffect(() => {
+    setFormData((previous) => ({ ...previous, currency }));
+  }, [currency]);
 
   const categories = useMemo(
     () => [...new Set(products.map((p) => p.category).filter(Boolean))].sort(),
@@ -362,7 +381,7 @@ function Products() {
 
   const handleOpenCreate = () => {
     setSelectedProduct(null);
-    setFormData(EMPTY_FORM);
+    setFormData({ ...EMPTY_FORM, currency });
     setFormErrors({});
     setFormOpen(true);
   };
@@ -375,7 +394,7 @@ function Products() {
       category: product.category,
       quantity: product.quantity,
       price: product.price,
-      currency: product.currency || "EUR",
+      currency: product.currency || currency,
       imageUrl: product.imageUrl || "",
     });
     setFormErrors({});
@@ -422,15 +441,16 @@ function Products() {
         }
         setProducts((prev) => prev.map((p) => (p._id === selectedProduct._id ? data.product : p)));
         recordActivity("updated", data.product);
-        showNotification("Produit mis à jour avec succès.");
+        showFeedback("Produit mis à jour avec succès.");
       } else {
         const data = await createProduct(productPayload);
         if (!data.product) {
           throw new Error("La réponse du serveur ne contient pas le produit créé.");
         }
-        setProducts((prev) => [data.product, ...prev]);
+        // Relire le catalogue après le retour réussi de l'API : MongoDB reste la source de vérité.
+        await loadProducts();
         recordActivity("created", data.product);
-        showNotification("Produit créé avec succès.");
+        showFeedback("Produit ajouté avec succès.");
       }
 
       setFormOpen(false);
@@ -442,7 +462,7 @@ function Products() {
         });
         setFormErrors(errors);
       } else {
-        showNotification(error.message, "error");
+        showFeedback(error.message, "error");
       }
     } finally {
       setFormLoading(false);
@@ -456,10 +476,10 @@ function Products() {
       await deleteProduct(selectedProduct._id);
       setProducts((prev) => prev.filter((p) => p._id !== selectedProduct._id));
       recordActivity("deleted", selectedProduct);
-      showNotification("Produit supprimé avec succès.");
+      showFeedback("Produit supprimé avec succès.");
       setDeleteOpen(false);
     } catch (error) {
-      showNotification(error.message, "error");
+      showFeedback(error.message, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -507,7 +527,7 @@ function Products() {
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
               title="Valeur du Stock"
-              value={formatPrice(stats.stockValue)}
+              value={formatCurrency(stats.stockValue, currency)}
               icon="trending_up"
               iconColor={brand.status.success.color}
               iconBg={brand.status.success.bg}
@@ -866,7 +886,7 @@ function Products() {
                                 fontWeight="bold"
                                 sx={{ color: brand.accent }}
                               >
-                                {formatPrice(product.price)}
+                                {formatCurrency(product.price, product.currency || currency)}
                               </MDTypography>
                             </TableCell>
 
