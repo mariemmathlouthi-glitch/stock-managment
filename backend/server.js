@@ -43,11 +43,12 @@ const seedAdmin = async () => {
                 email,
                 telephone,
                 motDePasse: motDePasseHash,
-                role: "admin"
+                role: "admin",
+                estActif: true
             });
 
             await admin.save();
-            console.log(`Admin initial créé : ${email} (mot de passe par défaut si non défini par env)`);
+            console.log(`Admin initial créé : ${email}`);
         } else {
             console.log("Un administrateur existe déjà.");
         }
@@ -59,10 +60,10 @@ const seedAdmin = async () => {
 seedAdmin();
 
 app.get("/", (req, res) => {
-        res.send("API Gestion Stock fonctionne");
+    res.send("API Gestion Stock fonctionne");
 });
 
-
-app.listen(5000, () => {
-        console.log("Serveur lancé sur le port 5000");
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Serveur lancé sur le port ${PORT}`);
 });

@@ -67,6 +67,8 @@ import ProductFormDialog from "layouts/products/components/ProductFormDialog";
 
 import DeleteConfirmDialog from "layouts/products/components/DeleteConfirmDialog";
 
+import TablePagination from "components/TablePagination";
+
 
 
 const LOW_STOCK_THRESHOLD = 10;
@@ -365,6 +367,18 @@ function Products() {
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [products, search, categoryFilter, statusFilter]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, categoryFilter, statusFilter]);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(start, start + itemsPerPage);
+  }, [filteredProducts, currentPage, itemsPerPage]);
 
   const handleOpenCreate = () => {
     setSelectedProduct(null);
@@ -670,288 +684,308 @@ function Products() {
                   )}
                 </MDBox>
               ) : (
-                <TableContainer sx={{ overflowX: "auto", borderRadius: "12px" }}>
-                  <Table sx={{ minWidth: 800, tableLayout: "fixed", width: "100%" }}>
-                    <TableHead
-                      sx={{
-                        display: "table-header-group !important",
-                        padding: "0 !important",
-                        borderRadius: "0 !important",
-                      }}
-                    >
-                      <TableRow
+                <>
+                  <TableContainer sx={{ overflowX: "auto", borderRadius: "12px" }}>
+                    <Table sx={{ minWidth: 800, tableLayout: "fixed", width: "100%" }}>
+                      <TableHead
                         sx={{
-                          display: "table-row !important",
-                          "& th": {
-                            borderBottom: `1px solid ${brand.inputBorder}`,
-                            backgroundColor: brand.inputBg,
-                            py: 1.75,
-                            display: "table-cell !important",
-                          },
+                          display: "table-header-group !important",
+                          padding: "0 !important",
+                          borderRadius: "0 !important",
                         }}
                       >
-                        {COLUMNS.map((col) => (
-                          <TableCell
-                            key={col.name}
-                            align={col.align}
-                            sx={{
-                              width: col.width,
-                              minWidth: col.minWidth,
-                              fontWeight: 700,
-                              fontSize: "0.7rem",
-                              textTransform: "uppercase",
-                              letterSpacing: 0.8,
-                              color: brand.textSecondary,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {col.name}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredProducts.map((product, index) => {
-                        const status = getStockStatus(product.quantity, product.minStockThreshold);
-                        return (
-                          <TableRow
-                            key={product._id}
-                            sx={{
-                              transition: "background-color 0.2s ease",
-                              animation: `fadeIn 0.35s ease ${index * 0.04}s both`,
-                              "@keyframes fadeIn": {
-                                from: { opacity: 0, transform: "translateY(6px)" },
-                                to: { opacity: 1, transform: "translateY(0)" },
-                              },
-                              "&:hover": {
-                                backgroundColor: "rgba(176,42,70,0.03)",
-                              },
-                              "& td": {
-                                borderBottom: `1px solid ${brand.inputBorder}`,
-                                py: 2,
-                                display: "table-cell !important",
-                              },
-                            }}
-                          >
+                        <TableRow
+                          sx={{
+                            display: "table-row !important",
+                            "& th": {
+                              borderBottom: `1px solid ${brand.inputBorder}`,
+                              backgroundColor: brand.inputBg,
+                              py: 1.75,
+                              display: "table-cell !important",
+                            },
+                          }}
+                        >
+                          {COLUMNS.map((col) => (
                             <TableCell
-                              align={COLUMNS[0].align}
+                              key={col.name}
+                              align={col.align}
                               sx={{
-                                width: COLUMNS[0].width,
-                                minWidth: COLUMNS[0].minWidth,
+                                width: col.width,
+                                minWidth: col.minWidth,
+                                fontWeight: 700,
+                                fontSize: "0.7rem",
+                                textTransform: "uppercase",
+                                letterSpacing: 0.8,
+                                color: brand.textSecondary,
+                                whiteSpace: "nowrap",
                               }}
                             >
-                              <MDBox display="flex" alignItems="center" gap={1.5}>
-                                <MDBox
-                                  display="flex"
-                                  alignItems="center"
-                                  justifyContent="center"
-                                  width="2.75rem"
-                                  height="2.75rem"
-                                  borderRadius="12px"
-                                  sx={{ backgroundColor: "rgba(176,42,70,0.1)", flexShrink: 0 }}
-                                >
-                                  <Icon sx={{ color: brand.accent, fontSize: "1.15rem" }}>inventory_2</Icon>
+                              {col.name}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {paginatedProducts.map((product, index) => {
+                          const status = getStockStatus(product.quantity, product.minStockThreshold);
+                          return (
+                            <TableRow
+                              key={product._id}
+                              sx={{
+                                transition: "background-color 0.2s ease",
+                                animation: `fadeIn 0.35s ease ${index * 0.04}s both`,
+                                "@keyframes fadeIn": {
+                                  from: { opacity: 0, transform: "translateY(6px)" },
+                                  to: { opacity: 1, transform: "translateY(0)" },
+                                },
+                                "&:hover": {
+                                  backgroundColor: "rgba(176,42,70,0.03)",
+                                },
+                                "& td": {
+                                  borderBottom: `1px solid ${brand.inputBorder}`,
+                                  py: 2,
+                                  display: "table-cell !important",
+                                },
+                              }}
+                            >
+                              <TableCell
+                                align={COLUMNS[0].align}
+                                sx={{
+                                  width: COLUMNS[0].width,
+                                  minWidth: COLUMNS[0].minWidth,
+                                }}
+                              >
+                                <MDBox display="flex" alignItems="center" gap={1.5}>
+                                  <MDBox
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                    width="2.75rem"
+                                    height="2.75rem"
+                                    borderRadius="12px"
+                                    sx={{ backgroundColor: "rgba(176,42,70,0.1)", flexShrink: 0 }}
+                                  >
+                                    <Icon sx={{ color: brand.accent, fontSize: "1.15rem" }}>inventory_2</Icon>
+                                  </MDBox>
+                                  <MDBox sx={{ minWidth: 0, width: "100%" }}>
+                                    <MDTypography
+                                      variant="button"
+                                      fontWeight="bold"
+                                      display="block"
+                                      sx={{
+                                        color: brand.textPrimary,
+                                        whiteSpace: "normal",
+                                        wordBreak: "break-word",
+                                      }}
+                                    >
+                                      {product.name}
+                                    </MDTypography>
+                                    {product.description && (
+                                      <MDTypography
+                                        variant="caption"
+                                        display="block"
+                                        sx={{
+                                          color: brand.textSecondary,
+                                          whiteSpace: "normal",
+                                          wordBreak: "break-word",
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          display: "-webkit-box",
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: "vertical",
+                                        }}
+                                      >
+                                        {product.description}
+                                      </MDTypography>
+                                    )}
+                                  </MDBox>
                                 </MDBox>
-                                <MDBox sx={{ minWidth: 0, width: "100%" }}>
+                              </TableCell>
+
+                              <TableCell
+                                align={COLUMNS[1].align}
+                                sx={{
+                                  width: COLUMNS[1].width,
+                                  minWidth: COLUMNS[1].minWidth,
+                                }}
+                              >
+                                <Chip
+                                  label={product.category}
+                                  size="small"
+                                  sx={{
+                                    backgroundColor: brand.inputBg,
+                                    color: brand.textSecondary,
+                                    border: `1px solid ${brand.inputBorder}`,
+                                    fontWeight: 500,
+                                    fontSize: "0.75rem",
+                                  }}
+                                />
+                              </TableCell>
+
+                              <TableCell
+                                align={COLUMNS[2].align}
+                                sx={{
+                                  width: COLUMNS[2].width,
+                                  minWidth: COLUMNS[2].minWidth,
+                                }}
+                              >
+                                <MDTypography
+                                  variant="button"
+                                  fontWeight="medium"
+                                  sx={{
+                                    color: brand.textPrimary,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {formatCurrency(product.price, product.currency || currency)}
+                                </MDTypography>
+                              </TableCell>
+
+                              <TableCell
+                                align={COLUMNS[3].align}
+                                sx={{
+                                  width: COLUMNS[3].width,
+                                  minWidth: COLUMNS[3].minWidth,
+                                }}
+                              >
+                                <MDTypography
+                                  variant="button"
+                                  fontWeight="bold"
+                                  sx={{
+                                    color: brand.textPrimary,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {formatCurrency(
+                                    (product.price || 0) * (product.quantity || 0),
+                                    product.currency || currency
+                                  )}
+                                </MDTypography>
+                              </TableCell>
+
+                              <TableCell
+                                align={COLUMNS[4].align}
+                                sx={{
+                                  width: COLUMNS[4].width,
+                                  minWidth: COLUMNS[4].minWidth,
+                                }}
+                              >
+                                <MDBox>
                                   <MDTypography
                                     variant="button"
-                                    fontWeight="bold"
-                                    display="block"
+                                    fontWeight="medium"
                                     sx={{
-                                      color: brand.textPrimary,
-                                      whiteSpace: "normal",
-                                      wordBreak: "break-word",
+                                      color: status.color,
+                                      whiteSpace: "nowrap",
                                     }}
                                   >
-                                    {product.name}
+                                    {product.quantity} unités
                                   </MDTypography>
                                   <MDTypography
                                     variant="caption"
                                     display="block"
                                     sx={{
                                       color: brand.textSecondary,
-                                      whiteSpace: "normal",
-                                      wordBreak: "break-word",
+                                      fontSize: "0.68rem",
                                     }}
                                   >
-                                    {product.description || "—"}
+                                    Seuil : {product.minStockThreshold ?? 5}
                                   </MDTypography>
                                 </MDBox>
-                              </MDBox>
-                            </TableCell>
-                            <TableCell
-                              align={COLUMNS[1].align}
-                              sx={{
-                                width: COLUMNS[1].width,
-                                minWidth: COLUMNS[1].minWidth,
-                              }}
-                            >
-                              <MDTypography
-                                variant="caption"
-                                fontWeight="medium"
+                              </TableCell>
+
+                              <TableCell
+                                align={COLUMNS[5].align}
                                 sx={{
-                                  fontFamily: "monospace",
-                                  color: brand.textSecondary,
-                                  backgroundColor: brand.inputBorder,
-                                  px: 1,
-                                  py: 0.5,
-                                  borderRadius: "6px",
-                                  whiteSpace: "nowrap",
+                                  width: COLUMNS[5].width,
+                                  minWidth: COLUMNS[5].minWidth,
                                 }}
                               >
-                                {getReference(product._id)}
-                              </MDTypography>
-                            </TableCell>
-
-                            <TableCell
-                              align={COLUMNS[2].align}
-                              sx={{
-                                width: COLUMNS[2].width,
-                                minWidth: COLUMNS[2].minWidth,
-                              }}
-                            >
-                              <Chip
-                                label={product.category}
-                                size="small"
-                                sx={{
-                                  backgroundColor: "rgba(99,102,241,0.08)",
-                                  color: brand.status.info.color,
-                                  fontWeight: 500,
-                                  fontSize: "0.75rem",
-                                  borderRadius: "6px",
-                                  maxWidth: "100%",
-                                }}
-                              />
-                            </TableCell>
-
-                            <TableCell
-                              align={COLUMNS[3].align}
-                              sx={{
-                                width: COLUMNS[3].width,
-                                minWidth: COLUMNS[3].minWidth,
-                              }}
-                            >
-                              <MDTypography
-                                variant="button"
-                                fontWeight="bold"
-                                sx={{
-                                  color: brand.accent,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {formatPrice(product.price, product.currency)}
-                              </MDTypography>
-                            </TableCell>
-
-                            <TableCell
-                              align={COLUMNS[4].align}
-                              sx={{
-                                width: COLUMNS[4].width,
-                                minWidth: COLUMNS[4].minWidth,
-                              }}
-                            >
-                              <MDBox>
-                                <MDTypography
-                                  variant="button"
-                                  fontWeight="medium"
+                                <Chip
+                                  label={status.label}
+                                  size="small"
                                   sx={{
+                                    backgroundColor: status.bg,
                                     color: status.color,
+                                    fontWeight: 700,
+                                    fontSize: "0.72rem",
+                                  }}
+                                />
+                              </TableCell>
+
+                              <TableCell
+                                align={COLUMNS[6].align}
+                                sx={{
+                                  width: COLUMNS[6].width,
+                                  minWidth: COLUMNS[6].minWidth,
+                                }}
+                              >
+                                <MDTypography
+                                  variant="caption"
+                                  sx={{
+                                    color: brand.textSecondary,
                                     whiteSpace: "nowrap",
                                   }}
                                 >
-                                  {product.quantity} unités
+                                  {formatDate(product.createdAt)}
                                 </MDTypography>
-                                <MDTypography
-                                  variant="caption"
-                                  display="block"
-                                  sx={{
-                                    color: brand.textSecondary,
-                                    fontSize: "0.68rem",
-                                  }}
-                                >
-                                  Seuil : {product.minStockThreshold ?? 5}
-                                </MDTypography>
-                              </MDBox>
-                            </TableCell>
+                              </TableCell>
 
-                            <TableCell
-                              align={COLUMNS[5].align}
-                              sx={{
-                                width: COLUMNS[5].width,
-                                minWidth: COLUMNS[5].minWidth,
-                              }}
-                            >
-                              <StatusChip label={status.label} color={status.color} bg={status.bg} />
-                            </TableCell>
-
-                            <TableCell
-                              align={COLUMNS[6].align}
-                              sx={{
-                                width: COLUMNS[6].width,
-                                minWidth: COLUMNS[6].minWidth,
-                              }}
-                            >
-                              <MDTypography
-                                variant="caption"
+                              <TableCell
+                                align={COLUMNS[7].align}
                                 sx={{
-                                  color: brand.textSecondary,
-                                  whiteSpace: "nowrap",
+                                  width: COLUMNS[7].width,
+                                  minWidth: COLUMNS[7].minWidth,
                                 }}
                               >
-                                {formatDate(product.createdAt)}
-                              </MDTypography>
-                            </TableCell>
+                                <MDBox display="flex" gap={0.75} alignItems="center">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleOpenEdit(product)}
+                                    sx={{
+                                      backgroundColor: brand.status.info.bg,
+                                      borderRadius: "8px",
+                                      transition: "all 0.2s ease",
+                                      "&:hover": { backgroundColor: "rgba(99,102,241,0.22)", transform: "scale(1.05)" },
+                                    }}
+                                  >
+                                    <Icon fontSize="small" sx={{ color: brand.status.info.color }}>
+                                      edit
+                                    </Icon>
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleOpenDelete(product)}
+                                    sx={{
+                                      backgroundColor: brand.status.error.bg,
+                                      borderRadius: "8px",
+                                      transition: "all 0.2s ease",
+                                      "&:hover": { backgroundColor: "rgba(239,68,68,0.22)", transform: "scale(1.05)" },
+                                    }}
+                                  >
+                                    <Icon fontSize="small" sx={{ color: brand.status.error.color }}>
+                                      delete
+                                    </Icon>
+                                  </IconButton>
+                                </MDBox>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
 
-                            <TableCell
-                              align={COLUMNS[7].align}
-                              sx={{
-                                width: COLUMNS[7].width,
-                                minWidth: COLUMNS[7].minWidth,
-                              }}
-                            >
-                              <MDBox display="flex" gap={0.75} alignItems="center">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleOpenEdit(product)}
-                                  sx={{
-                                    backgroundColor: brand.status.info.bg,
-                                    borderRadius: "8px",
-                                    transition: "all 0.2s ease",
-                                    "&:hover": { backgroundColor: "rgba(99,102,241,0.22)", transform: "scale(1.05)" },
-                                  }}
-                                >
-                                  <Icon fontSize="small" sx={{ color: brand.status.info.color }}>
-                                    edit
-                                  </Icon>
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleOpenDelete(product)}
-                                  sx={{
-                                    backgroundColor: brand.status.error.bg,
-                                    borderRadius: "8px",
-                                    transition: "all 0.2s ease",
-                                    "&:hover": { backgroundColor: "rgba(239,68,68,0.22)", transform: "scale(1.05)" },
-                                  }}
-                                >
-                                  <Icon fontSize="small" sx={{ color: brand.status.error.color }}>
-                                    delete
-                                  </Icon>
-                                </IconButton>
-                              </MDBox>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-
-                </TableContainer>
-
+                  <TablePagination
+                    currentPage={currentPage}
+                    totalItems={filteredProducts.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={(page) => setCurrentPage(page)}
+                    itemLabel="produits"
+                  />
+                </>
               )}
-
             </MDBox>
-
           </Card>
 
         </Fade>

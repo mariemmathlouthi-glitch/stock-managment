@@ -76,18 +76,31 @@ function Cover() {
     setMessage("");
     setMessageColor("text");
 
+    const apiBase = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    let response;
+    const body = JSON.stringify({
+      prenom,
+      nom,
+      email,
+      telephone,
+      motDePasse,
+    });
+    const headers = { "Content-Type": "application/json" };
+
     try {
-      const response = await fetch("/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prenom,
-          nom,
-          email,
-          telephone,
-          motDePasse,
-        }),
-      });
+      try {
+        response = await fetch(`${apiBase}/api/users/register`, {
+          method: "POST",
+          headers,
+          body,
+        });
+      } catch (err) {
+        response = await fetch("/api/users/register", {
+          method: "POST",
+          headers,
+          body,
+        });
+      }
 
       const data = await response.json();
 

@@ -1,4 +1,7 @@
 {
+  "Admin": "Gestion des utilisateurs",
+  "sidebar.admin": "Gestion des utilisateurs",
+  "Gestion des utilisateurs": "Gestion des utilisateurs",
   "language": {
     "fr": "Français",
     "en": "English"
@@ -12,7 +15,7 @@
     "sign_up": "Sign Up",
     "sign_in": "Sign In",
     "notifications": "Notifications",
-    "admin": "Admin",
+    "admin": "Gestion des utilisateurs",
     "check_new_messages": "Check new messages",
     "manage_podcast_sessions": "Manage podcast sessions",
     "payment_successfully_completed": "Payment successfully completed"
@@ -20,7 +23,7 @@
   "sidebar": {
     "dashboard": "Dashboard",
     "stock_dashboard": "Dashboard",
-    "admin": "Admin",
+    "admin": "Gestion des utilisateurs",
     "products": "Products",
     "tables": "Tables",
     "billing": "Billing",

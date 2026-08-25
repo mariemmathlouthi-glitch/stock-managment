@@ -1,6 +1,5 @@
 /**
- * StockFlow brand tokens — aligned with the login page identity.
- * Supports both dark and light modes.
+ * StockFlow brand tokens — dark & light mode variants.
  */
 
 const darkTokens = {
@@ -27,6 +26,7 @@ const darkTokens = {
   shadowCard: "0 2px 12px rgba(0, 0, 0, 0.4)",
   shadowCardHover: "0 8px 28px rgba(0, 0, 0, 0.6)",
   shadowSidebar: "4px 0 24px rgba(0, 0, 0, 0.5)",
+  iconBoxBg: "rgba(176, 42, 70, 0.12)",
   status: {
     success: { color: "#4ade80", bg: "rgba(74,222,128,0.15)" },
     warning: { color: "#fbbf24", bg: "rgba(251,191,36,0.15)" },
@@ -59,6 +59,7 @@ const lightTokens = {
   shadowCard: "0 2px 12px rgba(0, 0, 0, 0.08)",
   shadowCardHover: "0 8px 28px rgba(0, 0, 0, 0.12)",
   shadowSidebar: "4px 0 24px rgba(0, 0, 0, 0.08)",
+  iconBoxBg: "rgba(176, 42, 70, 0.1)",
   status: {
     success: { color: "#16a34a", bg: "rgba(22,163,74,0.1)" },
     warning: { color: "#d97706", bg: "rgba(217,119,6,0.1)" },
@@ -67,17 +68,13 @@ const lightTokens = {
   },
 };
 
-/**
- * Returns brand tokens for the given mode.
- * @param {boolean} isDark - true for dark mode, false for light mode
- * @returns {object} brand tokens
- */
 export function getBrandTokens(isDark = true) {
   return isDark ? darkTokens : lightTokens;
 }
 
 export const getBrand = getBrandTokens;
+export const brandDark = darkTokens;
+export const brandLight = lightTokens;
 
-// Default export for backward compatibility (dark mode)
 const brand = darkTokens;
 export default brand;

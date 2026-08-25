@@ -16,7 +16,7 @@ Coded by www.creative-tim.com
 import { useState, useEffect } from "react";
 
 // react-router components
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 
 // prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
@@ -26,6 +26,7 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import Icon from "@mui/material/Icon";
 
 // Material Dashboard 2 React components
@@ -61,6 +62,8 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
   const [openMenu, setOpenMenu] = useState(false);
+  const [userMenu, setUserMenu] = useState(null);
+  const navigate = useNavigate();
   const route = useLocation().pathname.split("/").slice(1);
   const { t } = useTranslation();
 
@@ -95,6 +98,11 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
   const handleCloseMenu = () => setOpenMenu(false);
 
+  const handleOpenUserMenu = (event) => {
+    setUserMenu((prev) => (prev ? null : event.currentTarget));
+  };
+  const handleCloseUserMenu = () => setUserMenu(null);
+
   // Render the notifications menu
   const renderMenu = () => (
     <Menu
@@ -114,6 +122,90 @@ function DashboardNavbar({ absolute, light, isMini }) {
         icon={<Icon>shopping_cart</Icon>}
         title={t("navbar.payment_successfully_completed")}
       />
+    </Menu>
+  );
+
+  // Render the user menu
+  const renderUserMenu = () => (
+    <Menu
+      anchorEl={userMenu}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
+      open={Boolean(userMenu)}
+      onClose={handleCloseUserMenu}
+      sx={{
+        mt: 1.5,
+        "& .MuiPaper-root": {
+          borderRadius: "12px",
+          padding: "4px 0",
+          minWidth: "170px",
+          boxShadow: darkMode
+            ? "0 10px 30px rgba(0, 0, 0, 0.5)"
+            : "0 10px 30px rgba(0, 0, 0, 0.12)",
+          border: darkMode
+            ? "1px solid rgba(255, 255, 255, 0.12)"
+            : "1px solid rgba(0, 0, 0, 0.08)",
+          backgroundColor: darkMode ? "#202940" : "#ffffff",
+          zIndex: 1300,
+        },
+      }}
+    >
+      <MenuItem
+        onClick={() => {
+          handleCloseUserMenu();
+          navigate("/dashboard");
+        }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          px: 2,
+          py: 1.2,
+          transition: "all 150ms ease",
+          "&:hover": {
+            backgroundColor: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.04)",
+          },
+        }}
+      >
+        <Icon sx={{ color: darkMode ? "#fff" : "#344767", fontSize: "1.2rem" }}>dashboard</Icon>
+        <MDTypography
+          variant="button"
+          fontWeight="medium"
+          sx={{ color: darkMode ? "#fff" : "#344767" }}
+        >
+          Tableau de bord
+        </MDTypography>
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          handleCloseUserMenu();
+          localStorage.removeItem("token");
+          localStorage.removeItem("utilisateur");
+          navigate("/authentication/sign-in");
+        }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          px: 2,
+          py: 1.2,
+          transition: "all 150ms ease",
+          "&:hover": {
+            backgroundColor: "rgba(229, 62, 62, 0.08)",
+          },
+        }}
+      >
+        <Icon sx={{ color: "#e53e3e", fontSize: "1.2rem" }}>logout</Icon>
+        <MDTypography variant="button" fontWeight="medium" sx={{ color: "#e53e3e" }}>
+          Déconnexion
+        </MDTypography>
+      </MenuItem>
     </Menu>
   );
 
@@ -153,7 +245,18 @@ function DashboardNavbar({ absolute, light, isMini }) {
               <MDInput label={t("navbar.search_placeholder")} />
             </MDBox>
             <MDBox color={light ? "white" : "inherit"} display="flex" alignItems="center">
-              <MDBox display="flex" alignItems="center" sx={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: "8px", px: 1.5, py: 0.5, mr: 1, border: "1px solid rgba(255,255,255,0.1)" }}>
+              <MDBox
+                display="flex"
+                alignItems="center"
+                sx={{
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  borderRadius: "8px",
+                  px: 1.5,
+                  py: 0.5,
+                  mr: 1,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
                 <Icon sx={{ color: "#a89a9f", fontSize: "1rem", mr: 0.5 }}>schedule</Icon>
                 <MDTypography variant="button" fontWeight="medium" sx={{ color: "#a89a9f" }}>
                   Décembre 2024
@@ -171,7 +274,13 @@ function DashboardNavbar({ absolute, light, isMini }) {
               >
                 <Icon sx={iconsStyle}>notifications</Icon>
               </IconButton>
-              <MDBox display="flex" alignItems="center" gap={1} sx={{ ml: 1, mr: 1 }}>
+              <MDBox
+                display="flex"
+                alignItems="center"
+                gap={1}
+                sx={{ ml: 1, mr: 1, cursor: "pointer" }}
+                onClick={handleOpenUserMenu}
+              >
                 <MDBox
                   display="flex"
                   alignItems="center"
@@ -189,11 +298,16 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 <MDTypography
                   variant="button"
                   fontWeight="medium"
-                  sx={{ color: darkMode ? "#fff" : "#344767", display: { xs: "none", sm: "block" } }}
+                  sx={{
+                    color: darkMode ? "#fff" : "#344767",
+                    display: { xs: "none", sm: "block" },
+                  }}
                 >
-                  Admin
+                  Ayari Rahma
                 </MDTypography>
-                <Icon sx={{ color: "#a89a9f", fontSize: "1rem", cursor: "pointer" }}>expand_more</Icon>
+                <Icon sx={{ color: "#a89a9f", fontSize: "1rem", cursor: "pointer" }}>
+                  expand_more
+                </Icon>
               </MDBox>
               <IconButton
                 size="small"
@@ -207,6 +321,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 </Icon>
               </IconButton>
               {renderMenu()}
+              {renderUserMenu()}
             </MDBox>
           </MDBox>
         )}

@@ -70,7 +70,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "sidebar.admin",
+    name: "Gestion des utilisateurs",
     key: "admin",
     icon: <Icon fontSize="small">admin_panel_settings</Icon>,
     route: "/admin",

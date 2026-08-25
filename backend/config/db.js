@@ -3,12 +3,11 @@ const mongoose = require("mongoose");
 const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/gestionstock";
-    await mongoose.connect(mongoUri);
+    const conn = await mongoose.connect(mongoUri);
 
-    console.log("MongoDB connecté");
+    console.log(`MongoDB connecté avec succès : ${conn.connection.host}/${conn.connection.name}`);
   } catch (error) {
-    console.error("Erreur MongoDB :", error.message);
-    process.exit(1);
+    console.error("Erreur de connexion MongoDB :", error.message);
   }
 };
 

@@ -73,12 +73,22 @@ function Basic() {
     setMessage("");
     setMessageColor("text");
 
+    const apiBase = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    let response;
     try {
-      const response = await fetch("/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, motDePasse }),
-      });
+      try {
+        response = await fetch(`${apiBase}/api/users/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, motDePasse }),
+        });
+      } catch (err) {
+        response = await fetch("/api/users/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, motDePasse }),
+        });
+      }
       const data = await response.json();
 
       if (response.ok) {
